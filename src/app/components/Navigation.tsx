@@ -23,7 +23,7 @@ export function Navigation() {
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
       <div className="container mx-auto px-6 max-w-7xl">
-        <div className={`flex items-center justify-between h-20 ${isRTL ? 'flex-row-reverse' : ''}`}>
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold bg-gradient-to-l from-blue-600 to-teal-600 bg-clip-text text-transparent">
             {isRTL ? content.siteInfo.brandHe : content.siteInfo.brandEn}
@@ -38,7 +38,7 @@ export function Navigation() {
           </button>
 
           {/* Main Navigation */}
-          <div className={`hidden md:flex items-center gap-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className="hidden md:flex items-center gap-8">
             <Link
               to="/"
               onClick={closeMenus}
