@@ -1,7 +1,10 @@
 import { Check, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router';
+import { useLanguage } from '../context/LanguageContext';
 
 export function Pricing() {
+  const { language } = useLanguage();
+  const isRTL = language === 'he';
   const packages = [
     {
       name: 'אתר בלבד',
@@ -59,7 +62,7 @@ export function Pricing() {
   return (
     <section className="bg-gradient-to-b from-gray-50/30 to-white py-28">
       <div className="container mx-auto px-6 max-w-7xl">
-        <div className="text-center mb-20" dir="rtl">
+        <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
           <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
             אפשרויות השקעה
           </h2>
@@ -77,7 +80,7 @@ export function Pricing() {
                   ? 'bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600 text-white shadow-2xl shadow-blue-600/40 scale-105 lg:scale-110 z-10'
                   : 'bg-white border-2 border-gray-200 hover:border-gray-300 shadow-md hover:shadow-xl'
               }`}
-              dir="rtl"
+              dir={isRTL ? 'rtl' : 'ltr'}
             >
               {pkg.highlighted && (
                 <div className="absolute -top-5 right-1/2 transform translate-x-1/2">

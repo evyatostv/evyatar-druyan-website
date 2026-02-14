@@ -1,7 +1,12 @@
 import { ArrowLeft, Mail } from 'lucide-react';
 import { Link } from 'react-router';
+import { useSiteContent } from '../context/SiteContentContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export function FinalCTA() {
+  const { content } = useSiteContent();
+  const { language } = useLanguage();
+  const isRTL = language === 'he';
   return (
     <section className="relative bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600 py-28 overflow-hidden">
       {/* Decorative elements */}
@@ -9,7 +14,7 @@ export function FinalCTA() {
       <div className="absolute bottom-10 left-20 w-96 h-96 bg-teal-400/10 rounded-full blur-3xl"></div>
       
       <div className="container mx-auto px-6 max-w-4xl text-center relative z-10">
-        <div dir="rtl">
+        <div dir={isRTL ? 'rtl' : 'ltr'}>
           <h2 className="text-5xl md:text-6xl font-extrabold text-white mb-8 leading-tight tracking-tight">
             מוכן להצמיח את העסק שלך?
           </h2>
@@ -25,7 +30,7 @@ export function FinalCTA() {
               בקש הצעת מחיר
             </Link>
             <a
-              href="mailto:hello@yoursite.com"
+              href={`mailto:${content.siteInfo.email}`}
               className="bg-blue-800/80 backdrop-blur-sm hover:bg-blue-700 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 border-2 border-blue-400/30 hover:border-blue-400/50 flex items-center gap-3 hover:scale-105"
             >
               <Mail className="w-5 h-5" />

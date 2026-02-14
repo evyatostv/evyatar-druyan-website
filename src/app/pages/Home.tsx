@@ -5,17 +5,24 @@ import { Process } from '../components/Process';
 import { Pricing } from '../components/Pricing';
 import { About } from '../components/About';
 import { FinalCTA } from '../components/FinalCTA';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export function Home() {
+  const { content } = useSiteContent();
+
+  const sections = {
+    hero: <Hero key="hero" />,
+    services: <Services key="services" />,
+    portfolio: <Portfolio key="portfolio" />,
+    process: <Process key="process" />,
+    pricing: <Pricing key="pricing" />,
+    about: <About key="about" />,
+    finalCta: <FinalCTA key="finalCta" />,
+  };
+
   return (
     <div className="pt-20">
-      <Hero />
-      <Services />
-      <Portfolio />
-      <Process />
-      <Pricing />
-      <About />
-      <FinalCTA />
+      {content.homeSections.map((sectionId) => sections[sectionId])}
     </div>
   );
 }

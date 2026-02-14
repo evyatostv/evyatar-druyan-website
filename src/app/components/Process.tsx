@@ -1,6 +1,9 @@
 import { Search, Palette, Rocket, BarChart3 } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export function Process() {
+  const { language } = useLanguage();
+  const isRTL = language === 'he';
   const steps = [
     {
       icon: <Search className="w-8 h-8" />,
@@ -31,7 +34,7 @@ export function Process() {
   return (
     <section className="bg-white py-28 overflow-hidden">
       <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-20" dir="rtl">
+        <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
           <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
             איך אנחנו עובדים
           </h2>
@@ -46,7 +49,7 @@ export function Process() {
           
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
             {steps.map((step, index) => (
-              <div key={index} className="relative" dir="rtl">
+              <div key={index} className="relative" dir={isRTL ? 'rtl' : 'ltr'}>
                 <div className="bg-gradient-to-br from-white to-gray-50/50 rounded-3xl p-8 border-2 border-gray-100 hover:border-gray-200 hover:shadow-xl transition-all duration-500 h-full group">
                   {/* Circle number indicator */}
                   <div className="relative z-10 w-20 h-20 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-2xl mb-6 mx-auto shadow-lg shadow-blue-600/30 group-hover:scale-110 transition-transform duration-500">
@@ -66,7 +69,7 @@ export function Process() {
           </div>
         </div>
 
-        <div className="mt-14 bg-gradient-to-l from-blue-50 to-teal-50 border-r-4 border-blue-600 p-8 rounded-3xl" dir="rtl">
+        <div className="mt-14 bg-gradient-to-l from-blue-50 to-teal-50 border-r-4 border-blue-600 p-8 rounded-3xl" dir={isRTL ? 'rtl' : 'ltr'}>
           <p className="text-gray-700 text-lg">
             <span className="font-bold text-gray-900">שים לב:</span> העבודה מתחילה לאחר תשלום התחלתי או פיקדון. זה מבטיח מחויבות ומאפשר לי להקצות זמן ייעודי לפרויקט שלך.
           </p>

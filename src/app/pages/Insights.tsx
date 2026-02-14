@@ -1,80 +1,13 @@
-import { Calendar, Clock, ArrowLeft } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 import { Link } from 'react-router';
 import { useLanguage } from '../context/LanguageContext';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export function Insights() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
-
-  const articles = isRTL
-    ? [
-        {
-          title: '5 אלמנטים קריטיים באתר ממיר',
-          excerpt: 'למד מה הופך אתר לכלי צמיחה עסקי אמיתי ולא סתם נוכחות דיגיטלית.',
-          category: 'עיצוב אתרים',
-          date: '15 פברואר 2026',
-          readTime: '5 דק׳',
-          slug: 'critical-website-elements',
-        },
-        {
-          title: 'איך להפחית עלות רכישה ב-Meta Ads',
-          excerpt: 'אסטרטגיות מוכחות לשיפור ROI בקמפיינים ממומנים ב-Meta.',
-          category: 'פרסום ממומן',
-          date: '10 פברואר 2026',
-          readTime: '7 דק׳',
-          slug: 'reduce-meta-ads-cost',
-        },
-        {
-          title: 'מדוע אתר מהיר = יותר המרות',
-          excerpt: 'הקשר בין מהירות אתר לשיעורי המרה והשפעתו על הכנסות.',
-          category: 'אופטימיזציה',
-          date: '5 פברואר 2026',
-          readTime: '4 דק׳',
-          slug: 'website-speed-conversions',
-        },
-        {
-          title: 'בניית משפך שיווקי שמניב תוצאות',
-          excerpt: 'כיצד לתכנן ולהפעיל משפך שיווקי שממיר מבקרים ללקוחות.',
-          category: 'אסטרטגיה',
-          date: '1 פברואר 2026',
-          readTime: '6 דק׳',
-          slug: 'marketing-funnel-guide',
-        },
-      ]
-    : [
-        {
-          title: '5 Critical Elements of a Converting Website',
-          excerpt: 'Learn what turns a website into a real business growth tool, not just digital presence.',
-          category: 'Website Design',
-          date: 'February 15, 2026',
-          readTime: '5 min',
-          slug: 'critical-website-elements',
-        },
-        {
-          title: 'How to Reduce Acquisition Cost in Meta Ads',
-          excerpt: 'Proven strategies for improving ROI in Meta paid campaigns.',
-          category: 'Paid Advertising',
-          date: 'February 10, 2026',
-          readTime: '7 min',
-          slug: 'reduce-meta-ads-cost',
-        },
-        {
-          title: 'Why Fast Website = More Conversions',
-          excerpt: 'The relationship between website speed and conversion rates and its impact on revenue.',
-          category: 'Optimization',
-          date: 'February 5, 2026',
-          readTime: '4 min',
-          slug: 'website-speed-conversions',
-        },
-        {
-          title: 'Building a Marketing Funnel That Delivers Results',
-          excerpt: 'How to plan and execute a marketing funnel that converts visitors into customers.',
-          category: 'Strategy',
-          date: 'February 1, 2026',
-          readTime: '6 min',
-          slug: 'marketing-funnel-guide',
-        },
-      ];
+  const { content } = useSiteContent();
+  const articles = content.articles;
 
   return (
     <div className="pt-20 bg-gradient-to-b from-white to-gray-50">
@@ -92,28 +25,28 @@ export function Insights() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {articles.map((article, index) => (
+            {articles.map((article) => (
               <Link
-                key={index}
+                key={article.slug}
                 to={`/insights/${article.slug}`}
                 className="group bg-white rounded-3xl p-8 border-2 border-gray-200 hover:border-blue-300 hover:shadow-xl transition-all duration-300"
                 dir={isRTL ? 'rtl' : 'ltr'}
               >
                 <div className="inline-block text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
-                  {article.category}
+                  {isRTL ? article.categoryHe : article.categoryEn}
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
-                  {article.title}
+                  {isRTL ? article.titleHe : article.titleEn}
                 </h2>
-                <p className="text-lg text-gray-600 mb-6 leading-relaxed">{article.excerpt}</p>
+                <p className="text-lg text-gray-600 mb-6 leading-relaxed">{isRTL ? article.excerptHe : article.excerptEn}</p>
                 <div className="flex items-center gap-6 text-gray-500">
                   <div className="flex items-center gap-2">
                     <Calendar className="w-5 h-5" />
-                    <span>{article.date}</span>
+                    <span>{isRTL ? article.dateHe : article.dateEn}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-5 h-5" />
-                    <span>{article.readTime}</span>
+                    <span>{isRTL ? article.readTimeHe : article.readTimeEn}</span>
                   </div>
                 </div>
               </Link>

@@ -1,6 +1,9 @@
 import { Target, Zap, LineChart, Shield } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 export function About() {
+  const { language } = useLanguage();
+  const isRTL = language === 'he';
   const values = [
     {
       icon: <Target className="w-7 h-7" />,
@@ -28,7 +31,7 @@ export function About() {
     <section className="bg-white py-28">
       <div className="container mx-auto px-6 max-w-6xl">
         <div className="grid lg:grid-cols-2 gap-16 items-center">
-          <div dir="rtl">
+          <div dir={isRTL ? 'rtl' : 'ltr'}>
             <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
               בנוי לצמיחה, לא רק אסתטיקה
             </h2>
@@ -52,7 +55,7 @@ export function About() {
               ))}
             </div>
           </div>
-          <div className="relative" dir="rtl">
+          <div className="relative" dir={isRTL ? 'rtl' : 'ltr'}>
             <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600 rounded-3xl p-12 text-white shadow-2xl shadow-blue-600/40">
               {/* Subtle glow overlay */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent rounded-3xl"></div>

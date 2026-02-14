@@ -11,6 +11,7 @@ import { FAQ } from './pages/FAQ';
 import { Insights } from './pages/Insights';
 import { InsightDetail } from './pages/InsightDetail';
 import { Results } from './pages/Results';
+import { Admin } from './pages/Admin';
 
 export const router = createBrowserRouter(
   [
@@ -31,6 +32,7 @@ export const router = createBrowserRouter(
         { path: 'results', Component: Results },
       ],
     },
+    { path: '/admin', Component: Admin },
   ],
   { basename: import.meta.env.BASE_URL },
 );

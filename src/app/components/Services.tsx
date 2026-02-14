@@ -1,7 +1,10 @@
 import { Globe, TrendingUp, Zap } from 'lucide-react';
 import { Link } from 'react-router';
+import { useLanguage } from '../context/LanguageContext';
 
 export function Services() {
+  const { language } = useLanguage();
+  const isRTL = language === 'he';
   const services = [
     {
       icon: <Globe className="w-10 h-10 text-blue-600" />,
@@ -35,7 +38,7 @@ export function Services() {
   return (
     <section className="bg-white py-28">
       <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-20" dir="rtl">
+        <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
           <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
             שירותים לצמיחה
           </h2>
@@ -49,7 +52,7 @@ export function Services() {
             <div
               key={index}
               className={`relative bg-gradient-to-br ${service.gradient} backdrop-blur-sm rounded-3xl p-10 border-2 ${service.borderColor} hover:shadow-2xl hover:scale-105 transition-all duration-500 group overflow-hidden`}
-              dir="rtl"
+              dir={isRTL ? 'rtl' : 'ltr'}
             >
               {/* Subtle glow effect */}
               <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>

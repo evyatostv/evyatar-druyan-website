@@ -1,9 +1,44 @@
+import { useState } from 'react';
 import { Mail, Phone, MapPin, ArrowLeft } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
+import { useSiteContent } from '../context/SiteContentContext';
+
+interface ContactFormState {
+  fullName: string;
+  email: string;
+  company: string;
+  budget: string;
+  projectType: string;
+  details: string;
+}
+
+const initialForm: ContactFormState = {
+  fullName: '',
+  email: '',
+  company: '',
+  budget: '',
+  projectType: '',
+  details: '',
+};
 
 export function Contact() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
+  const { addLead, content } = useSiteContent();
+  const [formData, setFormData] = useState<ContactFormState>(initialForm);
+  const [sent, setSent] = useState(false);
+
+  const onChange = (key: keyof ContactFormState, value: string) => {
+    setFormData((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    addLead(formData);
+    setFormData(initialForm);
+    setSent(true);
+    window.setTimeout(() => setSent(false), 3000);
+  };
 
   return (
     <div className="pt-20 bg-gradient-to-b from-gray-50 to-white min-h-screen">
@@ -21,9 +56,8 @@ export function Contact() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-12">
-            {/* Contact Form */}
             <div className="lg:col-span-2">
-              <form className="bg-white rounded-3xl p-10 shadow-xl border-2 border-gray-100" dir={isRTL ? 'rtl' : 'ltr'}>
+              <form onSubmit={onSubmit} className="bg-white rounded-3xl p-10 shadow-xl border-2 border-gray-100" dir={isRTL ? 'rtl' : 'ltr'}>
                 <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label className="block text-gray-900 font-semibold mb-2">
@@ -31,6 +65,8 @@ export function Contact() {
                     </label>
                     <input
                       type="text"
+                      value={formData.fullName}
+                      onChange={(e) => onChange('fullName', e.target.value)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors"
                       placeholder={isRTL ? 'שם שלך' : 'Your name'}
                       required
@@ -42,8 +78,10 @@ export function Contact() {
                     </label>
                     <input
                       type="email"
+                      value={formData.email}
+                      onChange={(e) => onChange('email', e.target.value)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors"
-                      placeholder={isRTL ? 'email@example.com' : 'email@example.com'}
+                      placeholder="email@example.com"
                       required
                     />
                   </div>
@@ -56,6 +94,8 @@ export function Contact() {
                     </label>
                     <input
                       type="text"
+                      value={formData.company}
+                      onChange={(e) => onChange('company', e.target.value)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors"
                       placeholder={isRTL ? 'שם החברה' : 'Company name'}
                       required
@@ -66,6 +106,8 @@ export function Contact() {
                       {isRTL ? 'תקציב משוער' : 'Estimated Budget'}
                     </label>
                     <select
+                      value={formData.budget}
+                      onChange={(e) => onChange('budget', e.target.value)}
                       className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors"
                       required
                     >
@@ -83,6 +125,8 @@ export function Contact() {
                     {isRTL ? 'סוג הפרויקט' : 'Project Type'}
                   </label>
                   <select
+                    value={formData.projectType}
+                    onChange={(e) => onChange('projectType', e.target.value)}
                     className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors"
                     required
                   >
@@ -99,6 +143,8 @@ export function Contact() {
                   </label>
                   <textarea
                     rows={6}
+                    value={formData.details}
+                    onChange={(e) => onChange('details', e.target.value)}
                     className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors resize-none"
                     placeholder={isRTL ? 'ספר לנו על הפרויקט, היעדים והציפיות שלך...' : 'Tell us about your project, goals, and expectations...'}
                     required
@@ -123,14 +169,17 @@ export function Contact() {
                 </button>
 
                 <p className="text-center text-gray-500 mt-6">
-                  {isRTL
-                    ? 'נחזור אליך תוך 24 שעות עם הצעה מותאמת אישית'
-                    : "We'll respond within 24 hours with a custom proposal"}
+                  {sent
+                    ? isRTL
+                      ? 'הבקשה נשלחה ונשמרה בלידים בהצלחה.'
+                      : 'Request submitted and saved to leads successfully.'
+                    : isRTL
+                      ? 'נחזור אליך תוך 24 שעות עם הצעה מותאמת אישית'
+                      : "We'll respond within 24 hours with a custom proposal"}
                 </p>
               </form>
             </div>
 
-            {/* Contact Info */}
             <div dir={isRTL ? 'rtl' : 'ltr'}>
               <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600 rounded-3xl p-10 text-white shadow-2xl h-full">
                 <h3 className="text-3xl font-bold mb-8">
@@ -143,8 +192,8 @@ export function Contact() {
                     </div>
                     <div>
                       <div className="font-semibold mb-1">{isRTL ? 'אימייל' : 'Email'}</div>
-                      <a href="mailto:hello@yoursite.com" className="text-blue-100 hover:text-white">
-                        hello@yoursite.com
+                      <a href={`mailto:${content.siteInfo.email}`} className="text-blue-100 hover:text-white">
+                        {content.siteInfo.email}
                       </a>
                     </div>
                   </div>
@@ -154,8 +203,8 @@ export function Contact() {
                     </div>
                     <div>
                       <div className="font-semibold mb-1">{isRTL ? 'טלפון' : 'Phone'}</div>
-                      <a href="tel:+972501234567" className="text-blue-100 hover:text-white">
-                        +972-50-123-4567
+                      <a href={`tel:${content.siteInfo.phone.replace(/[^+\d]/g, '')}`} className="text-blue-100 hover:text-white">
+                        {content.siteInfo.phone}
                       </a>
                     </div>
                   </div>
@@ -166,7 +215,7 @@ export function Contact() {
                     <div>
                       <div className="font-semibold mb-1">{isRTL ? 'מיקום' : 'Location'}</div>
                       <div className="text-blue-100">
-                        {isRTL ? 'תל אביב, ישראל' : 'Tel Aviv, Israel'}
+                        {isRTL ? content.siteInfo.locationHe : content.siteInfo.locationEn}
                       </div>
                     </div>
                   </div>

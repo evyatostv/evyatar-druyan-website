@@ -1,0 +1,512 @@
+import { useEffect, useMemo, useState } from 'react';
+import { useSiteContent, HomeSectionId, LeadItem, ProjectItem, ArticleItem, FAQItem } from '../context/SiteContentContext';
+import { useLanguage } from '../context/LanguageContext';
+
+const AUTH_STORAGE_KEY = 'admin-auth-v1';
+const SESSION_STORAGE_KEY = 'admin-session-v1';
+const PBKDF2_ITERATIONS = 210000;
+
+interface AdminAuthRecord {
+  salt: string;
+  hash: string;
+  iterations: number;
+}
+
+function bytesToBase64(bytes: Uint8Array) {
+  let binary = '';
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+function base64ToBytes(base64: string) {
+  const binary = atob(base64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i += 1) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+async function hashPassword(password: string, saltBase64: string, iterations: number) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), { name: 'PBKDF2' }, false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits(
+    {
+      name: 'PBKDF2',
+      hash: 'SHA-256',
+      salt: base64ToBytes(saltBase64),
+      iterations,
+    },
+    keyMaterial,
+    256,
+  );
+  return bytesToBase64(new Uint8Array(bits));
+}
+
+function moveItem<T>(arr: T[], from: number, to: number) {
+  const copy = [...arr];
+  const [item] = copy.splice(from, 1);
+  copy.splice(to, 0, item);
+  return copy;
+}
+
+function whatsappUrl(number: string, text: string) {
+  const clean = number.replace(/\D/g, '');
+  return `https://wa.me/${clean}?text=${encodeURIComponent(text)}`;
+}
+
+function formatDate(iso: string, locale: string) {
+  return new Date(iso).toLocaleString(locale === 'he' ? 'he-IL' : 'en-US');
+}
+
+export function Admin() {
+  const { content, setContent, resetContent } = useSiteContent();
+  const { language, setLanguage } = useLanguage();
+  const isRTL = language === 'he';
+
+  const [authReady, setAuthReady] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [setupPassword, setSetupPassword] = useState('');
+  const [setupPassword2, setSetupPassword2] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [authError, setAuthError] = useState('');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'content' | 'settings'>('dashboard');
+
+  const [newProject, setNewProject] = useState<ProjectItem>({
+    id: '',
+    image: '',
+    titleHe: '',
+    titleEn: '',
+    categoryHe: '',
+    categoryEn: '',
+    resultHe: '',
+    resultEn: '',
+    descriptionHe: '',
+    descriptionEn: '',
+  });
+  const [newArticle, setNewArticle] = useState<ArticleItem>({
+    slug: '',
+    titleHe: '',
+    titleEn: '',
+    excerptHe: '',
+    excerptEn: '',
+    categoryHe: '',
+    categoryEn: '',
+    dateHe: '',
+    dateEn: '',
+    readTimeHe: '',
+    readTimeEn: '',
+    contentHe: '',
+    contentEn: '',
+  });
+  const [newFaq, setNewFaq] = useState<FAQItem>({
+    id: '',
+    questionHe: '',
+    questionEn: '',
+    answerHe: '',
+    answerEn: '',
+  });
+
+  const authRecord = useMemo(() => {
+    const value = localStorage.getItem(AUTH_STORAGE_KEY);
+    if (!value) return null;
+    try {
+      const parsed = JSON.parse(value) as AdminAuthRecord;
+      if (!parsed.salt || !parsed.hash || !parsed.iterations) return null;
+      return parsed;
+    } catch {
+      return null;
+    }
+  }, [authReady]);
+
+  useEffect(() => {
+    setAuthReady(true);
+    const hasSession = sessionStorage.getItem(SESSION_STORAGE_KEY) === 'ok';
+    if (hasSession) {
+      setIsAuthenticated(true);
+    }
+  }, []);
+
+  const createPassword = async () => {
+    setAuthError('');
+    if (setupPassword.length < 8) {
+      setAuthError(isRTL ? 'הסיסמה חייבת להיות לפחות 8 תווים' : 'Password must be at least 8 characters');
+      return;
+    }
+    if (setupPassword !== setupPassword2) {
+      setAuthError(isRTL ? 'הסיסמאות לא תואמות' : 'Passwords do not match');
+      return;
+    }
+
+    const salt = new Uint8Array(16);
+    crypto.getRandomValues(salt);
+    const saltBase64 = bytesToBase64(salt);
+    const hash = await hashPassword(setupPassword, saltBase64, PBKDF2_ITERATIONS);
+    const record: AdminAuthRecord = {
+      salt: saltBase64,
+      hash,
+      iterations: PBKDF2_ITERATIONS,
+    };
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(record));
+    sessionStorage.setItem(SESSION_STORAGE_KEY, 'ok');
+    setIsAuthenticated(true);
+    setAuthReady((prev) => !prev);
+  };
+
+  const login = async () => {
+    setAuthError('');
+    if (!authRecord) return;
+    const hash = await hashPassword(loginPassword, authRecord.salt, authRecord.iterations);
+    if (hash !== authRecord.hash) {
+      setAuthError(isRTL ? 'סיסמה שגויה' : 'Wrong password');
+      return;
+    }
+    sessionStorage.setItem(SESSION_STORAGE_KEY, 'ok');
+    setIsAuthenticated(true);
+  };
+
+  const logout = () => {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    setIsAuthenticated(false);
+    setLoginPassword('');
+  };
+
+  const updateLeadMessage = (lead: LeadItem) => {
+    return content.siteInfo.whatsappTemplate
+      .replaceAll('{{name}}', lead.fullName || '-')
+      .replaceAll('{{company}}', lead.company || '-')
+      .replaceAll('{{projectType}}', lead.projectType || '-')
+      .replaceAll('{{budget}}', lead.budget || '-');
+  };
+
+  const sectionLabels: Record<HomeSectionId, string> = {
+    hero: 'Hero',
+    services: 'Services',
+    portfolio: 'Portfolio',
+    process: 'Process',
+    pricing: 'Pricing',
+    about: 'About',
+    finalCta: 'Final CTA',
+  };
+
+  if (!authReady) return null;
+
+  if (!authRecord && !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'הגדרת אדמין ראשונה' : 'First Admin Setup'}</h1>
+          <p className="text-gray-600 mb-6">
+            {isRTL ? 'בחר סיסמה. היא תישמר כ-Hash מוצפן (PBKDF2 + Salt) בדפדפן.' : 'Choose a password. It is stored as a hashed value (PBKDF2 + Salt) in the browser.'}
+          </p>
+          <div className="space-y-3">
+            <input
+              type="password"
+              placeholder={isRTL ? 'סיסמה חדשה' : 'New password'}
+              value={setupPassword}
+              onChange={(e) => setSetupPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3"
+            />
+            <input
+              type="password"
+              placeholder={isRTL ? 'אימות סיסמה' : 'Confirm password'}
+              value={setupPassword2}
+              onChange={(e) => setSetupPassword2(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3"
+            />
+            {authError && <p className="text-red-600 text-sm">{authError}</p>}
+            <button onClick={createPassword} className="w-full bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-blue-700 transition-colors">
+              {isRTL ? 'צור אדמין' : 'Create Admin'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'כניסת אדמין' : 'Admin Login'}</h1>
+          <p className="text-gray-600 mb-6">{isRTL ? 'הכנס סיסמה כדי לנהל את האתר' : 'Enter password to manage the website'}</p>
+          <div className="space-y-3">
+            <input
+              type="password"
+              placeholder={isRTL ? 'סיסמה' : 'Password'}
+              value={loginPassword}
+              onChange={(e) => setLoginPassword(e.target.value)}
+              className="w-full border border-gray-300 rounded-xl px-4 py-3"
+            />
+            {authError && <p className="text-red-600 text-sm">{authError}</p>}
+            <button onClick={login} className="w-full bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-blue-700 transition-colors">
+              {isRTL ? 'התחבר' : 'Login'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-sm text-gray-600">/admin</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
+              className="px-3 py-2 rounded-lg border border-gray-300 text-sm"
+            >
+              {language === 'he' ? 'EN' : 'עב'}
+            </button>
+            <button onClick={logout} className="px-3 py-2 rounded-lg border border-gray-300 text-sm">
+              {isRTL ? 'התנתק' : 'Logout'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        <div className="flex flex-wrap gap-2">
+          {[
+            ['dashboard', isRTL ? 'דשבורד' : 'Dashboard'],
+            ['leads', isRTL ? 'לידים' : 'Leads'],
+            ['content', isRTL ? 'תוכן' : 'Content'],
+            ['settings', isRTL ? 'הגדרות' : 'Settings'],
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setActiveTab(key as typeof activeTab)}
+              className={`px-4 py-2 rounded-xl border text-sm font-semibold ${
+                activeTab === key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-300 text-gray-700'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === 'dashboard' && (
+          <div className="grid md:grid-cols-4 gap-4">
+            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Leads</p><p className="text-3xl font-bold">{content.leads.length}</p></div>
+            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Projects</p><p className="text-3xl font-bold">{content.projects.length}</p></div>
+            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Articles</p><p className="text-3xl font-bold">{content.articles.length}</p></div>
+            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">FAQ</p><p className="text-3xl font-bold">{content.faqs.length}</p></div>
+          </div>
+        )}
+
+        {activeTab === 'leads' && (
+          <div className="bg-white border rounded-2xl p-5 space-y-4">
+            <h2 className="text-xl font-bold">{isRTL ? 'לידים שהתקבלו' : 'Received Leads'}</h2>
+            {content.leads.length === 0 && <p className="text-gray-600">{isRTL ? 'עדיין אין לידים' : 'No leads yet'}</p>}
+            {content.leads.map((lead) => (
+              <div key={lead.id} className="border border-gray-200 rounded-xl p-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+                  <p className="font-bold text-gray-900">{lead.fullName} · {lead.company}</p>
+                  <p className="text-sm text-gray-500">{formatDate(lead.createdAt, language)}</p>
+                </div>
+                <p className="text-sm text-gray-700">{lead.email} · {lead.projectType} · {lead.budget}</p>
+                <p className="text-gray-700 mt-2">{lead.details}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <a
+                    target="_blank"
+                    rel="noreferrer"
+                    href={whatsappUrl(content.siteInfo.whatsappNumber, updateLeadMessage(lead))}
+                    className="px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold"
+                  >
+                    {isRTL ? 'שלח וואטסאפ מהיר' : 'Quick WhatsApp'}
+                  </a>
+                  <a href={`mailto:${lead.email}`} className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold">
+                    {isRTL ? 'שלח אימייל' : 'Send Email'}
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {activeTab === 'content' && (
+          <div className="space-y-6">
+            <section className="bg-white border rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">{isRTL ? 'פרויקטים' : 'Projects'}</h2>
+                <button
+                  onClick={() => {
+                    if (!newProject.id.trim()) return;
+                    setContent((prev) => ({ ...prev, projects: [...prev.projects, newProject] }));
+                    setNewProject({ id: '', image: '', titleHe: '', titleEn: '', categoryHe: '', categoryEn: '', resultHe: '', resultEn: '', descriptionHe: '', descriptionEn: '' });
+                  }}
+                  className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm"
+                >
+                  {isRTL ? 'הוסף פרויקט' : 'Add Project'}
+                </button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {Object.keys(newProject).map((key) => (
+                  <input key={key} placeholder={`new.${key}`} value={String(newProject[key as keyof ProjectItem])} onChange={(e) => setNewProject((prev) => ({ ...prev, [key]: e.target.value }))} className="border rounded-lg px-3 py-2" />
+                ))}
+              </div>
+              {content.projects.map((project, index) => (
+                <div key={project.id} className="border rounded-xl p-3 space-y-2">
+                  <div className="flex gap-2">
+                    <button disabled={index === 0} onClick={() => setContent((prev) => ({ ...prev, projects: moveItem(prev.projects, index, index - 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↑</button>
+                    <button disabled={index === content.projects.length - 1} onClick={() => setContent((prev) => ({ ...prev, projects: moveItem(prev.projects, index, index + 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↓</button>
+                    <button onClick={() => setContent((prev) => ({ ...prev, projects: prev.projects.filter((item) => item.id !== project.id) }))} className="px-2 py-1 border rounded text-red-600">{isRTL ? 'מחק' : 'Delete'}</button>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-2">
+                    {Object.keys(project).map((key) => (
+                      <input
+                        key={key}
+                        value={String(project[key as keyof ProjectItem])}
+                        onChange={(e) =>
+                          setContent((prev) => ({
+                            ...prev,
+                            projects: prev.projects.map((item, i) => (i === index ? { ...item, [key]: e.target.value } : item)),
+                          }))
+                        }
+                        className="border rounded-lg px-3 py-2"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className="bg-white border rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">{isRTL ? 'כתבות' : 'Articles'}</h2>
+                <button
+                  onClick={() => {
+                    if (!newArticle.slug.trim()) return;
+                    setContent((prev) => ({ ...prev, articles: [...prev.articles, newArticle] }));
+                    setNewArticle({ slug: '', titleHe: '', titleEn: '', excerptHe: '', excerptEn: '', categoryHe: '', categoryEn: '', dateHe: '', dateEn: '', readTimeHe: '', readTimeEn: '', contentHe: '', contentEn: '' });
+                  }}
+                  className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm"
+                >
+                  {isRTL ? 'הוסף כתבה' : 'Add Article'}
+                </button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {Object.keys(newArticle).map((key) => (
+                  <input key={key} placeholder={`new.${key}`} value={String(newArticle[key as keyof ArticleItem])} onChange={(e) => setNewArticle((prev) => ({ ...prev, [key]: e.target.value }))} className="border rounded-lg px-3 py-2" />
+                ))}
+              </div>
+              {content.articles.map((article, index) => (
+                <div key={article.slug} className="border rounded-xl p-3 space-y-2">
+                  <div className="flex gap-2">
+                    <button disabled={index === 0} onClick={() => setContent((prev) => ({ ...prev, articles: moveItem(prev.articles, index, index - 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↑</button>
+                    <button disabled={index === content.articles.length - 1} onClick={() => setContent((prev) => ({ ...prev, articles: moveItem(prev.articles, index, index + 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↓</button>
+                    <button onClick={() => setContent((prev) => ({ ...prev, articles: prev.articles.filter((item) => item.slug !== article.slug) }))} className="px-2 py-1 border rounded text-red-600">{isRTL ? 'מחק' : 'Delete'}</button>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-2">
+                    {Object.keys(article).map((key) => (
+                      <input
+                        key={key}
+                        value={String(article[key as keyof ArticleItem])}
+                        onChange={(e) =>
+                          setContent((prev) => ({
+                            ...prev,
+                            articles: prev.articles.map((item, i) => (i === index ? { ...item, [key]: e.target.value } : item)),
+                          }))
+                        }
+                        className="border rounded-lg px-3 py-2"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            <section className="bg-white border rounded-2xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-bold">FAQ</h2>
+                <button
+                  onClick={() => {
+                    if (!newFaq.id.trim()) return;
+                    setContent((prev) => ({ ...prev, faqs: [...prev.faqs, newFaq] }));
+                    setNewFaq({ id: '', questionHe: '', questionEn: '', answerHe: '', answerEn: '' });
+                  }}
+                  className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm"
+                >
+                  {isRTL ? 'הוסף שאלה' : 'Add FAQ'}
+                </button>
+              </div>
+              <div className="grid md:grid-cols-2 gap-2">
+                {Object.keys(newFaq).map((key) => (
+                  <input key={key} placeholder={`new.${key}`} value={String(newFaq[key as keyof FAQItem])} onChange={(e) => setNewFaq((prev) => ({ ...prev, [key]: e.target.value }))} className="border rounded-lg px-3 py-2" />
+                ))}
+              </div>
+              {content.faqs.map((faq, index) => (
+                <div key={faq.id} className="border rounded-xl p-3 space-y-2">
+                  <div className="flex gap-2">
+                    <button disabled={index === 0} onClick={() => setContent((prev) => ({ ...prev, faqs: moveItem(prev.faqs, index, index - 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↑</button>
+                    <button disabled={index === content.faqs.length - 1} onClick={() => setContent((prev) => ({ ...prev, faqs: moveItem(prev.faqs, index, index + 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↓</button>
+                    <button onClick={() => setContent((prev) => ({ ...prev, faqs: prev.faqs.filter((item) => item.id !== faq.id) }))} className="px-2 py-1 border rounded text-red-600">{isRTL ? 'מחק' : 'Delete'}</button>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-2">
+                    {Object.keys(faq).map((key) => (
+                      <input
+                        key={key}
+                        value={String(faq[key as keyof FAQItem])}
+                        onChange={(e) =>
+                          setContent((prev) => ({
+                            ...prev,
+                            faqs: prev.faqs.map((item, i) => (i === index ? { ...item, [key]: e.target.value } : item)),
+                          }))
+                        }
+                        className="border rounded-lg px-3 py-2"
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <section className="bg-white border rounded-2xl p-5 space-y-3">
+              <h2 className="text-xl font-bold">{isRTL ? 'מידע אתר' : 'Site Info'}</h2>
+              <div className="grid md:grid-cols-2 gap-2">
+                {Object.entries(content.siteInfo).map(([key, value]) => (
+                  <input
+                    key={key}
+                    value={value}
+                    onChange={(e) => setContent((prev) => ({ ...prev, siteInfo: { ...prev.siteInfo, [key]: e.target.value } }))}
+                    className="border rounded-lg px-3 py-2"
+                    placeholder={key}
+                  />
+                ))}
+              </div>
+              <p className="text-xs text-gray-500">{isRTL ? 'תבנית וואטסאפ תומכת: {{name}}, {{company}}, {{projectType}}, {{budget}}' : 'WhatsApp template supports: {{name}}, {{company}}, {{projectType}}, {{budget}}'}</p>
+            </section>
+
+            <section className="bg-white border rounded-2xl p-5 space-y-3">
+              <h2 className="text-xl font-bold">{isRTL ? 'סדר קומפוננטים בעמוד הבית' : 'Homepage Section Order'}</h2>
+              {content.homeSections.map((section, index) => (
+                <div key={section} className="flex items-center gap-2">
+                  <div className="min-w-40">{sectionLabels[section]}</div>
+                  <button disabled={index === 0} onClick={() => setContent((prev) => ({ ...prev, homeSections: moveItem(prev.homeSections, index, index - 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↑</button>
+                  <button disabled={index === content.homeSections.length - 1} onClick={() => setContent((prev) => ({ ...prev, homeSections: moveItem(prev.homeSections, index, index + 1) }))} className="px-2 py-1 border rounded disabled:opacity-40">↓</button>
+                </div>
+              ))}
+            </section>
+
+            <section className="bg-white border rounded-2xl p-5 space-y-3">
+              <h2 className="text-xl font-bold text-red-700">{isRTL ? 'איפוס נתונים' : 'Reset Data'}</h2>
+              <p className="text-sm text-gray-600">{isRTL ? 'יחזיר את כל תוכן האתר לדיפולט וימחק לידים' : 'Restore default content and clear leads.'}</p>
+              <button onClick={resetContent} className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold">{isRTL ? 'אפס הכל' : 'Reset All'}</button>
+            </section>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+}
