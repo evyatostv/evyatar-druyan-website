@@ -1,4 +1,5 @@
 import { Check, ArrowLeft } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function Pricing() {
   const packages = [
@@ -142,7 +143,8 @@ export function Pricing() {
                     </li>
                   ))}
                 </ul>
-                <button
+                <Link
+                  to="/contact"
                   className={`w-full px-8 py-5 rounded-full font-semibold text-lg transition-all duration-300 flex items-center justify-center gap-3 ${
                     pkg.highlighted
                       ? 'bg-white text-blue-700 hover:bg-blue-50 shadow-xl hover:shadow-2xl hover:scale-105'
@@ -151,7 +153,7 @@ export function Pricing() {
                 >
                   <ArrowLeft className="w-5 h-5" />
                   {pkg.cta}
-                </button>
+                </Link>
               </div>
             </div>
           ))}

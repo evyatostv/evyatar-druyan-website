@@ -136,23 +136,9 @@ export function ServiceDetail() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
 
-  const data = service ? servicesData[service]?.[language] : null;
-  const IconComponent = service ? servicesData[service]?.icon : null;
-
-  if (!data) {
-    return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {isRTL ? 'שירות לא נמצא' : 'Service Not Found'}
-          </h1>
-          <Link to="/" className="text-blue-600 hover:text-blue-700 font-semibold">
-            {isRTL ? 'חזור לדף הבית' : 'Back to Home'}
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const safeService = service && servicesData[service] ? service : 'website-design';
+  const data = servicesData[safeService][language];
+  const IconComponent = servicesData[safeService].icon;
 
   return (
     <div className="pt-20 bg-white">

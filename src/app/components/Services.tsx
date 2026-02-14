@@ -1,4 +1,5 @@
 import { Globe, TrendingUp, Zap } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function Services() {
   const services = [
@@ -9,6 +10,7 @@ export function Services() {
       benefits: ['עיצוב Mobile-First', 'אופטימיזציה ל-SEO', 'ממוקד המרות', 'טעינה מהירה'],
       gradient: 'from-blue-50/50 to-blue-100/30',
       borderColor: 'border-blue-200/50',
+      path: '/services/website-design',
     },
     {
       icon: <TrendingUp className="w-10 h-10 text-teal-600" />,
@@ -17,6 +19,7 @@ export function Services() {
       benefits: ['אסטרטגיית קמפיינים', 'יצירה ובדיקת מודעות', 'טרגוט קהלים', 'מעקב ביצועים'],
       gradient: 'from-teal-50/50 to-teal-100/30',
       borderColor: 'border-teal-200/50',
+      path: '/services/paid-advertising',
     },
     {
       icon: <Zap className="w-10 h-10 text-purple-600" />,
@@ -25,6 +28,7 @@ export function Services() {
       benefits: ['גישה משולבת', 'מעקב מאוחד', 'ROI מקסימלי', 'ניהול מקצה לקצה'],
       gradient: 'from-purple-50/50 to-purple-100/30',
       borderColor: 'border-purple-200/50',
+      path: '/services/full-package',
     },
   ];
 
@@ -64,9 +68,12 @@ export function Services() {
                     </li>
                   ))}
                 </ul>
-                <button className="w-full bg-gradient-to-l from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105">
+                <Link
+                  to={service.path}
+                  className="block text-center w-full bg-gradient-to-l from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                >
                   קבל הצעת מחיר
-                </button>
+                </Link>
               </div>
             </div>
           ))}

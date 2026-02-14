@@ -134,22 +134,8 @@ export function CaseStudyDetail() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
 
-  const data = id ? caseStudyData[id]?.[language] : null;
-
-  if (!data) {
-    return (
-      <div className="pt-20 min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {isRTL ? 'מקרה בוחן לא נמצא' : 'Case Study Not Found'}
-          </h1>
-          <Link to="/case-studies" className="text-blue-600 hover:text-blue-700 font-semibold">
-            {isRTL ? 'חזור למקרי בוחן' : 'Back to Case Studies'}
-          </Link>
-        </div>
-      </div>
-    );
-  }
+  const safeId = id && caseStudyData[id] ? id : 'ecommerce-redesign';
+  const data = caseStudyData[safeId][language];
 
   return (
     <div className="pt-20 bg-white">

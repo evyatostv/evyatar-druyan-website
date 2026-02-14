@@ -1,4 +1,5 @@
 import { ArrowLeft, Mail } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function FinalCTA() {
   return (
@@ -16,14 +17,20 @@ export function FinalCTA() {
             בוא נדבר על הפרויקט שלך, היעדים וכיצד נוכל לבנות אתר ומערכת שיווק שמניבים הכנסות אמיתיות לעסק שלך.
           </p>
           <div className="flex flex-col sm:flex-row gap-5 justify-center items-center">
-            <button className="group bg-white text-blue-700 hover:bg-blue-50 px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 shadow-xl hover:shadow-2xl flex items-center gap-3 hover:scale-105">
+            <Link
+              to="/contact"
+              className="group bg-white text-blue-700 hover:bg-blue-50 px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 shadow-xl hover:shadow-2xl flex items-center gap-3 hover:scale-105"
+            >
               <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
               בקש הצעת מחיר
-            </button>
-            <button className="bg-blue-800/80 backdrop-blur-sm hover:bg-blue-700 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 border-2 border-blue-400/30 hover:border-blue-400/50 flex items-center gap-3 hover:scale-105">
+            </Link>
+            <a
+              href="mailto:hello@yoursite.com"
+              className="bg-blue-800/80 backdrop-blur-sm hover:bg-blue-700 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 border-2 border-blue-400/30 hover:border-blue-400/50 flex items-center gap-3 hover:scale-105"
+            >
               <Mail className="w-5 h-5" />
               שלח הודעה
-            </button>
+            </a>
           </div>
           <p className="text-blue-100 mt-10 text-lg font-light">
             העבודה מתחילה לאחר פיקדון. זמינות מוגבלת—שמור את המקום שלך היום.

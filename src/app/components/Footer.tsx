@@ -1,4 +1,5 @@
 import { Mail, Linkedin, Twitter, Instagram } from 'lucide-react';
+import { Link } from 'react-router';
 
 export function Footer() {
   return (
@@ -18,23 +19,23 @@ export function Footer() {
           <div>
             <h3 className="text-white font-bold text-2xl mb-6">שירותים</h3>
             <ul className="space-y-3">
-              <li><a href="#services" className="hover:text-white transition-colors text-lg">עיצוב אתרים</a></li>
-              <li><a href="#services" className="hover:text-white transition-colors text-lg">פרסום ממומן</a></li>
-              <li><a href="#services" className="hover:text-white transition-colors text-lg">חבילות צמיחה</a></li>
-              <li><a href="#portfolio" className="hover:text-white transition-colors text-lg">מקרי בוחן</a></li>
+              <li><Link to="/services/website-design" className="hover:text-white transition-colors text-lg">עיצוב אתרים</Link></li>
+              <li><Link to="/services/paid-advertising" className="hover:text-white transition-colors text-lg">פרסום ממומן</Link></li>
+              <li><Link to="/services/full-package" className="hover:text-white transition-colors text-lg">חבילות צמיחה</Link></li>
+              <li><Link to="/case-studies" className="hover:text-white transition-colors text-lg">מקרי בוחן</Link></li>
             </ul>
           </div>
 
           <div>
             <h3 className="text-white font-bold text-2xl mb-6">התחבר</h3>
             <div className="flex gap-5">
-              <a href="#" className="hover:text-white transition-colors bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition-all duration-300">
+              <a href="https://www.linkedin.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition-all duration-300">
                 <Linkedin className="w-6 h-6" />
               </a>
-              <a href="#" className="hover:text-white transition-colors bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition-all duration-300">
+              <a href="https://x.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition-all duration-300">
                 <Twitter className="w-6 h-6" />
               </a>
-              <a href="#" className="hover:text-white transition-colors bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition-all duration-300">
+              <a href="https://www.instagram.com" target="_blank" rel="noreferrer" className="hover:text-white transition-colors bg-gray-800 p-3 rounded-full hover:bg-gray-700 transition-all duration-300">
                 <Instagram className="w-6 h-6" />
               </a>
             </div>

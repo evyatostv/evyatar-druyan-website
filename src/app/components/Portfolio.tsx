@@ -1,4 +1,5 @@
 import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { Link } from 'react-router';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 
 export function Portfolio() {
@@ -89,10 +90,13 @@ export function Portfolio() {
         </div>
 
         <div className="text-center">
-          <button className="bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/40 inline-flex items-center gap-3 hover:scale-105">
+          <Link
+            to="/case-studies"
+            className="bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/40 inline-flex items-center gap-3 hover:scale-105"
+          >
             <ArrowLeft className="w-5 h-5" />
             צפה במקרי בוחן מלאים
-          </button>
+          </Link>
         </div>
       </div>
     </section>
