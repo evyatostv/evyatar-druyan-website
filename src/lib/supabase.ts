@@ -22,8 +22,27 @@ const supabaseAnonKey = cleanEnvValue(import.meta.env.VITE_SUPABASE_ANON_KEY, DE
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
+const resilientFetch: typeof fetch = async (input, init) => {
+  const run = async (withSignal: boolean) => {
+    const requestInit = withSignal ? init : { ...(init || {}), signal: undefined };
+    return fetch(input, requestInit as RequestInit);
+  };
+
+  try {
+    return await run(true);
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') {
+      return run(false);
+    }
+    throw error;
+  }
+};
+
 export const supabase = isSupabaseConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
+      global: {
+        fetch: resilientFetch,
+      },
       auth: {
         persistSession: true,
         autoRefreshToken: true,
