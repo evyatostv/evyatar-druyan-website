@@ -20,6 +20,11 @@ const rawSupabaseUrl = cleanEnvValue(import.meta.env.VITE_SUPABASE_URL, DEFAULT_
 const supabaseUrl = normalizeSupabaseUrl(rawSupabaseUrl);
 const supabaseAnonKey = cleanEnvValue(import.meta.env.VITE_SUPABASE_ANON_KEY, DEFAULT_SUPABASE_ANON_KEY);
 
+export const supabaseConfig = {
+  url: supabaseUrl,
+  anonKey: supabaseAnonKey,
+};
+
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 const resilientFetch: typeof fetch = async (input, init) => {

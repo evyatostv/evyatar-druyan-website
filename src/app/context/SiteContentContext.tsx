@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
-import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { isSupabaseConfigured, supabase, supabaseConfig } from '../../lib/supabase';
 
 export type HomeSectionId =
   | 'hero'
@@ -381,6 +381,25 @@ async function saveLeadRemote(lead: Omit<LeadItem, 'id' | 'createdAt'>) {
       return { ok: true };
     }
     lastError = error;
+  }
+
+  // Final fallback: direct REST insert without SDK abort signal handling.
+  for (const payload of variants) {
+    const response = await fetch(`${supabaseConfig.url}/rest/v1/${LEADS_TABLE}`, {
+      method: 'POST',
+      headers: {
+        apikey: supabaseConfig.anonKey,
+        Authorization: `Bearer ${supabaseConfig.anonKey}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    });
+    if (response.ok) {
+      return { ok: true };
+    }
+    lastError = new Error(`Supabase REST insert failed (${response.status})`);
   }
 
   throw lastError;
