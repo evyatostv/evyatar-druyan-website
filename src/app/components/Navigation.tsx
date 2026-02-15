@@ -2,11 +2,9 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router';
 import { ChevronDown, Globe, Menu, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { useSiteContent } from '../context/SiteContentContext';
 
 export function Navigation() {
   const { language, setLanguage, t } = useLanguage();
-  const { content } = useSiteContent();
   const location = useLocation();
   const [servicesOpen, setServicesOpen] = useState(false);
   const [caseStudiesOpen, setCaseStudiesOpen] = useState(false);
@@ -26,7 +24,7 @@ export function Navigation() {
         <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link to="/" className="text-2xl font-bold bg-gradient-to-l from-blue-600 to-teal-600 bg-clip-text text-transparent">
-            {isRTL ? content.siteInfo.brandHe : content.siteInfo.brandEn}
+            {isRTL ? 'דרוין עיצובים' : 'Druyan Design'}
           </Link>
 
           <button

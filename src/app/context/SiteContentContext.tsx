@@ -192,8 +192,8 @@ const defaultContent: SiteContent = {
   leads: [],
   homeSections: ['hero', 'services', 'portfolio', 'process', 'pricing', 'about', 'finalCta'],
   siteInfo: {
-    brandHe: 'סטודיו צמיחה',
-    brandEn: 'Growth Studio',
+    brandHe: 'דרוין עיצובים',
+    brandEn: 'Druyan Design',
     email: 'hello@yoursite.com',
     phone: '+972-50-123-4567',
     locationHe: 'תל אביב, ישראל',
