@@ -252,6 +252,19 @@ function normalizeContent(content: SiteContent): SiteContent {
   };
 }
 
+function isAbortError(error: unknown) {
+  if (error instanceof DOMException && error.name === 'AbortError') return true;
+  if (error && typeof error === 'object') {
+    const message = 'message' in error ? String((error as { message?: unknown }).message || '') : '';
+    const details = 'details' in error ? String((error as { details?: unknown }).details || '') : '';
+    const code = 'code' in error ? String((error as { code?: unknown }).code || '') : '';
+    const haystack = `${message} ${details} ${code}`.toLowerCase();
+    if (haystack.includes('abort')) return true;
+    if (haystack.includes('signal is aborted')) return true;
+  }
+  return false;
+}
+
 async function loadRemoteContent(): Promise<SiteContent | null> {
   if (!supabase) return null;
   const { data, error } = await supabase
@@ -434,7 +447,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
             // leads may be protected for non-admin sessions
           }
         } catch (error) {
-          console.error('Supabase load failed, fallback to local cache.', error);
+          if (!isAbortError(error)) {
+            console.error('Supabase load failed, fallback to local cache.', error);
+          }
         }
       }
 
@@ -461,7 +476,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
 
     remoteSaveTimerRef.current = window.setTimeout(() => {
       saveRemoteContent(normalizeContent(content)).catch((error) => {
-        console.error('Supabase save failed, changes remain local.', error);
+        if (!isAbortError(error)) {
+          console.error('Supabase save failed, changes remain local.', error);
+        }
       });
     }, REMOTE_SAVE_DEBOUNCE_MS);
 
@@ -516,7 +533,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
         await saveLeadRemote(lead);
         return true;
       } catch (error) {
-        console.error('Supabase lead insert failed, lead kept locally.', error);
+        if (!isAbortError(error)) {
+          console.error('Supabase lead insert failed, lead kept locally.', error);
+        }
         return false;
       }
     }

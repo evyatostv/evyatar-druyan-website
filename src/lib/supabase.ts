@@ -28,9 +28,31 @@ export const supabaseConfig = {
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
 const resilientFetch: typeof fetch = async (input, init) => {
+  const toRequestUrl = () => (input instanceof Request ? input.url : input);
+
   const run = async (withSignal: boolean) => {
-    const requestInit = withSignal ? init : { ...(init || {}), signal: undefined };
-    return fetch(input, requestInit as RequestInit);
+    const requestInitFromInput: RequestInit =
+      input instanceof Request
+        ? {
+            method: input.method,
+            headers: input.headers,
+            body: input.method === 'GET' || input.method === 'HEAD' ? undefined : input.clone().body,
+            cache: input.cache,
+            credentials: input.credentials,
+            integrity: input.integrity,
+            keepalive: input.keepalive,
+            mode: input.mode,
+            redirect: input.redirect,
+            referrer: input.referrer,
+            referrerPolicy: input.referrerPolicy,
+          }
+        : {};
+
+    const merged: RequestInit = { ...requestInitFromInput, ...(init || {}) };
+    if (!withSignal) {
+      delete (merged as { signal?: AbortSignal }).signal;
+    }
+    return fetch(toRequestUrl(), merged);
   };
 
   try {
