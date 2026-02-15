@@ -155,12 +155,18 @@ export function Admin() {
   useEffect(() => {
     let mounted = true;
     if (isSupabaseConfigured && supabase) {
+      const readyFallback = window.setTimeout(() => {
+        if (!mounted) return;
+        setAuthReady(true);
+      }, 2500);
+
       supabase.auth
         .getSession()
         .then(({ data }) => {
           if (!mounted) return;
           setIsAuthenticated(Boolean(data.session?.user));
           setAuthReady(true);
+          window.clearTimeout(readyFallback);
         })
         .catch((error) => {
           // Never keep /admin blank if session bootstrap fails.
@@ -168,14 +174,17 @@ export function Admin() {
           if (!mounted) return;
           setIsAuthenticated(false);
           setAuthReady(true);
+          window.clearTimeout(readyFallback);
         });
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
         setIsAuthenticated(Boolean(session?.user));
+        setAuthReady(true);
       });
       return () => {
         mounted = false;
+        window.clearTimeout(readyFallback);
         subscription.unsubscribe();
       };
     }
