@@ -310,6 +310,22 @@ async function saveRemoteContent(content: SiteContent) {
 
 async function loadRemoteLeads(): Promise<LeadItem[] | null> {
   if (!supabase) return null;
+  const sessionData = await supabase.auth.getSession();
+  const userId = sessionData.data.session?.user?.id;
+  if (userId) {
+    const { data: adminRow, error: adminError } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (adminError) {
+      throw adminError;
+    }
+    if (!adminRow) {
+      throw new Error('ADMIN_ACCESS_REQUIRED');
+    }
+  }
+
   const selectVariants = [
     'id,full_name,phone,email,company,budget,project_type,details,created_at',
     'id,full_name,phone,email,company,website,message,status,source,created_at',

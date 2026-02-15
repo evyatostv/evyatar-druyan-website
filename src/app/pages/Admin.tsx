@@ -86,6 +86,21 @@ function safeCompare(a: string, b: string) {
   return diff === 0;
 }
 
+function toLeadErrorMessage(error: unknown, isRTL: boolean) {
+  const raw =
+    error instanceof Error
+      ? error.message
+      : error && typeof error === 'object' && 'message' in error
+        ? String((error as { message?: unknown }).message || '')
+        : '';
+  if (raw.includes('ADMIN_ACCESS_REQUIRED')) {
+    return isRTL
+      ? 'למשתמש הזה אין הרשאת Admin לטעינת לידים. הוסף אותו לטבלת admin_users ב-Supabase.'
+      : 'This user is not an allowed admin for leads. Add this user to admin_users in Supabase.';
+  }
+  return isRTL ? 'שגיאה בטעינת לידים מ-Supabase' : 'Failed to load leads from Supabase';
+}
+
 export function Admin() {
   const { content, setContent, refreshLeads, resetContent } = useSiteContent();
   const { language, setLanguage } = useLanguage();
@@ -393,7 +408,7 @@ export function Admin() {
   useEffect(() => {
     if (!isAuthenticated || !isSupabaseConfigured) return;
     refreshLeads().catch((error) => {
-      setLeadsError(isRTL ? 'שגיאה בטעינת לידים מ-Supabase' : 'Failed to load leads from Supabase');
+      setLeadsError(toLeadErrorMessage(error, isRTL));
       console.error(error);
     });
   }, [isAuthenticated, isSupabaseConfigured, refreshLeads, isRTL]);
@@ -567,7 +582,11 @@ export function Admin() {
             {leadsError && <p className="text-sm text-red-600">{leadsError}</p>}
             {isSupabaseConfigured && (
               <button
-                onClick={() => refreshLeads().catch(() => setLeadsError(isRTL ? 'שגיאה בטעינת לידים' : 'Failed to refresh leads'))}
+                onClick={() =>
+                  refreshLeads().catch((error) => {
+                    setLeadsError(toLeadErrorMessage(error, isRTL));
+                  })
+                }
                 className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold"
               >
                 {isRTL ? 'רענן לידים' : 'Refresh Leads'}
