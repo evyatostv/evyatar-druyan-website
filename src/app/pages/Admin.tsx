@@ -5,11 +5,16 @@ import { useLanguage } from '../context/LanguageContext';
 const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
 const PBKDF2_ITERATIONS = 210000;
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 12;
 
 interface AdminAuthRecord {
   salt: string;
   hash: string;
   iterations: number;
+}
+
+interface AdminSessionRecord {
+  expiresAt: number;
 }
 
 function bytesToBase64(bytes: Uint8Array) {
@@ -52,13 +57,32 @@ function moveItem<T>(arr: T[], from: number, to: number) {
   return copy;
 }
 
-function whatsappUrl(number: string, text: string) {
+function normalizeWhatsappNumber(number: string) {
   const clean = number.replace(/\D/g, '');
+  if (!clean) return '';
+  if (clean.startsWith('972')) return clean;
+  if (clean.startsWith('0')) return `972${clean.slice(1)}`;
+  if (clean.length === 9 && clean.startsWith('5')) return `972${clean}`;
+  return clean;
+}
+
+function whatsappUrl(number: string, text: string) {
+  const clean = normalizeWhatsappNumber(number);
+  if (!clean) return '';
   return `https://wa.me/${clean}?text=${encodeURIComponent(text)}`;
 }
 
 function formatDate(iso: string, locale: string) {
   return new Date(iso).toLocaleString(locale === 'he' ? 'he-IL' : 'en-US');
+}
+
+function safeCompare(a: string, b: string) {
+  if (a.length !== b.length) return false;
+  let diff = 0;
+  for (let i = 0; i < a.length; i += 1) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 export function Admin() {
@@ -72,6 +96,10 @@ export function Admin() {
   const [setupPassword2, setSetupPassword2] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [authError, setAuthError] = useState('');
+  const [settingsMessage, setSettingsMessage] = useState('');
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [newPassword2, setNewPassword2] = useState('');
   const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'content' | 'settings'>('dashboard');
 
   const [newProject, setNewProject] = useState<ProjectItem>({
@@ -123,16 +151,59 @@ export function Admin() {
 
   useEffect(() => {
     setAuthReady(true);
-    const hasSession = sessionStorage.getItem(SESSION_STORAGE_KEY) === 'ok';
-    if (hasSession) {
-      setIsAuthenticated(true);
+    const rawSession = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (!rawSession) return;
+    try {
+      const parsed = JSON.parse(rawSession) as AdminSessionRecord;
+      if (parsed.expiresAt > Date.now()) {
+        setIsAuthenticated(true);
+        return;
+      }
+    } catch {
+      // invalid session data
     }
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
   }, []);
+
+  const setSession = () => {
+    const session: AdminSessionRecord = { expiresAt: Date.now() + SESSION_MAX_AGE_MS };
+    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  };
+
+  const ensureStrongPassword = (password: string) => {
+    if (password.length < 10) {
+      setAuthError(isRTL ? 'הסיסמה חייבת להיות לפחות 10 תווים' : 'Password must be at least 10 characters');
+      return false;
+    }
+    if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
+      setAuthError(isRTL ? 'הסיסמה חייבת לכלול אות גדולה, אות קטנה ומספר' : 'Password must include uppercase, lowercase, and number');
+      return false;
+    }
+    return true;
+  };
+
+  const createAuthRecord = async (password: string) => {
+    const salt = new Uint8Array(16);
+    crypto.getRandomValues(salt);
+    const saltBase64 = bytesToBase64(salt);
+    const hash = await hashPassword(password, saltBase64, PBKDF2_ITERATIONS);
+    const record: AdminAuthRecord = {
+      salt: saltBase64,
+      hash,
+      iterations: PBKDF2_ITERATIONS,
+    };
+    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(record));
+    return record;
+  };
+
+  const verifyPassword = async (password: string, record: AdminAuthRecord) => {
+    const hash = await hashPassword(password, record.salt, record.iterations);
+    return safeCompare(hash, record.hash);
+  };
 
   const createPassword = async () => {
     setAuthError('');
-    if (setupPassword.length < 8) {
-      setAuthError(isRTL ? 'הסיסמה חייבת להיות לפחות 8 תווים' : 'Password must be at least 8 characters');
+    if (!ensureStrongPassword(setupPassword)) {
       return;
     }
     if (setupPassword !== setupPassword2) {
@@ -140,17 +211,8 @@ export function Admin() {
       return;
     }
 
-    const salt = new Uint8Array(16);
-    crypto.getRandomValues(salt);
-    const saltBase64 = bytesToBase64(salt);
-    const hash = await hashPassword(setupPassword, saltBase64, PBKDF2_ITERATIONS);
-    const record: AdminAuthRecord = {
-      salt: saltBase64,
-      hash,
-      iterations: PBKDF2_ITERATIONS,
-    };
-    localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(record));
-    sessionStorage.setItem(SESSION_STORAGE_KEY, 'ok');
+    await createAuthRecord(setupPassword);
+    setSession();
     setIsAuthenticated(true);
     setAuthReady((prev) => !prev);
   };
@@ -158,14 +220,59 @@ export function Admin() {
   const login = async () => {
     setAuthError('');
     if (!authRecord) return;
-    const hash = await hashPassword(loginPassword, authRecord.salt, authRecord.iterations);
-    if (hash !== authRecord.hash) {
+    const isValid = await verifyPassword(loginPassword, authRecord);
+    if (!isValid) {
       setAuthError(isRTL ? 'סיסמה שגויה' : 'Wrong password');
       return;
     }
-    sessionStorage.setItem(SESSION_STORAGE_KEY, 'ok');
+    setSession();
     setIsAuthenticated(true);
   };
+
+  const changePassword = async () => {
+    setSettingsMessage('');
+    setAuthError('');
+    if (!authRecord) return;
+    const isCurrentValid = await verifyPassword(currentPassword, authRecord);
+    if (!isCurrentValid) {
+      setSettingsMessage(isRTL ? 'הסיסמה הנוכחית שגויה' : 'Current password is wrong');
+      return;
+    }
+    if (!ensureStrongPassword(newPassword)) {
+      setSettingsMessage(isRTL ? 'סיסמה חדשה חלשה מדי' : 'New password is too weak');
+      return;
+    }
+    if (newPassword !== newPassword2) {
+      setSettingsMessage(isRTL ? 'אימות הסיסמה החדשה לא תואם' : 'New password confirmation does not match');
+      return;
+    }
+    await createAuthRecord(newPassword);
+    setCurrentPassword('');
+    setNewPassword('');
+    setNewPassword2('');
+    setSettingsMessage(isRTL ? 'הסיסמה עודכנה בהצלחה' : 'Password updated successfully');
+  };
+
+  const copyText = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setSettingsMessage(isRTL ? 'הועתק ללוח' : 'Copied to clipboard');
+    } catch {
+      setSettingsMessage(isRTL ? 'לא ניתן להעתיק כרגע' : 'Could not copy right now');
+    }
+  };
+
+  const openLeadWhatsapp = (lead: LeadItem) => {
+    const preferredNumber = lead.phone?.trim() || content.siteInfo.whatsappNumber;
+    const link = whatsappUrl(preferredNumber, updateLeadMessage(lead));
+    if (!link) {
+      setSettingsMessage(isRTL ? 'אין מספר טלפון תקין לליד הזה' : 'No valid phone number for this lead');
+      return;
+    }
+    window.open(link, '_blank', 'noopener,noreferrer');
+  };
+
+  const latestLead = content.leads[0];
 
   const logout = () => {
     sessionStorage.removeItem(SESSION_STORAGE_KEY);
@@ -176,6 +283,7 @@ export function Admin() {
   const updateLeadMessage = (lead: LeadItem) => {
     return content.siteInfo.whatsappTemplate
       .replaceAll('{{name}}', lead.fullName || '-')
+      .replaceAll('{{phone}}', lead.phone || '-')
       .replaceAll('{{company}}', lead.company || '-')
       .replaceAll('{{projectType}}', lead.projectType || '-')
       .replaceAll('{{budget}}', lead.budget || '-');
@@ -293,11 +401,24 @@ export function Admin() {
         </div>
 
         {activeTab === 'dashboard' && (
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Leads</p><p className="text-3xl font-bold">{content.leads.length}</p></div>
-            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Projects</p><p className="text-3xl font-bold">{content.projects.length}</p></div>
-            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Articles</p><p className="text-3xl font-bold">{content.articles.length}</p></div>
-            <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">FAQ</p><p className="text-3xl font-bold">{content.faqs.length}</p></div>
+          <div className="space-y-4">
+            <div className="grid md:grid-cols-4 gap-4">
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Leads</p><p className="text-3xl font-bold">{content.leads.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Projects</p><p className="text-3xl font-bold">{content.projects.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Articles</p><p className="text-3xl font-bold">{content.articles.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">FAQ</p><p className="text-3xl font-bold">{content.faqs.length}</p></div>
+            </div>
+            <div className="bg-white border rounded-2xl p-5">
+              <h2 className="text-xl font-bold mb-3">{isRTL ? 'ליד אחרון' : 'Latest Lead'}</h2>
+              {!latestLead && <p className="text-gray-600">{isRTL ? 'עדיין אין לידים' : 'No leads yet'}</p>}
+              {latestLead && (
+                <div className="space-y-2">
+                  <p className="font-semibold">{latestLead.fullName} · {latestLead.company}</p>
+                  <p className="text-sm text-gray-600">{latestLead.phone || '-'} · {latestLead.email}</p>
+                  <p className="text-sm text-gray-500">{formatDate(latestLead.createdAt, language)}</p>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
@@ -311,17 +432,31 @@ export function Admin() {
                   <p className="font-bold text-gray-900">{lead.fullName} · {lead.company}</p>
                   <p className="text-sm text-gray-500">{formatDate(lead.createdAt, language)}</p>
                 </div>
-                <p className="text-sm text-gray-700">{lead.email} · {lead.projectType} · {lead.budget}</p>
+                <p className="text-sm text-gray-700">{lead.phone || '-'} · {lead.email} · {lead.projectType} · {lead.budget}</p>
                 <p className="text-gray-700 mt-2">{lead.details}</p>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <a
-                    target="_blank"
-                    rel="noreferrer"
-                    href={whatsappUrl(content.siteInfo.whatsappNumber, updateLeadMessage(lead))}
+                  <button
+                    onClick={() => openLeadWhatsapp(lead)}
                     className="px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold"
                   >
                     {isRTL ? 'שלח וואטסאפ מהיר' : 'Quick WhatsApp'}
-                  </a>
+                  </button>
+                  <button onClick={() => copyText(updateLeadMessage(lead))} className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold">
+                    {isRTL ? 'העתק הודעה מוכנה' : 'Copy Ready Message'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const link = whatsappUrl(lead.phone?.trim() || content.siteInfo.whatsappNumber, updateLeadMessage(lead));
+                      if (!link) {
+                        setSettingsMessage(isRTL ? 'אין מספר טלפון תקין לליד הזה' : 'No valid phone number for this lead');
+                        return;
+                      }
+                      copyText(link);
+                    }}
+                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold"
+                  >
+                    {isRTL ? 'העתק לינק וואטסאפ' : 'Copy WhatsApp Link'}
+                  </button>
                   <a href={`mailto:${lead.email}`} className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold">
                     {isRTL ? 'שלח אימייל' : 'Send Email'}
                   </a>
@@ -485,7 +620,7 @@ export function Admin() {
                   />
                 ))}
               </div>
-              <p className="text-xs text-gray-500">{isRTL ? 'תבנית וואטסאפ תומכת: {{name}}, {{company}}, {{projectType}}, {{budget}}' : 'WhatsApp template supports: {{name}}, {{company}}, {{projectType}}, {{budget}}'}</p>
+              <p className="text-xs text-gray-500">{isRTL ? 'תבנית וואטסאפ תומכת: {{name}}, {{phone}}, {{company}}, {{projectType}}, {{budget}}' : 'WhatsApp template supports: {{name}}, {{phone}}, {{company}}, {{projectType}}, {{budget}}'}</p>
             </section>
 
             <section className="bg-white border rounded-2xl p-5 space-y-3">
@@ -503,6 +638,37 @@ export function Admin() {
               <h2 className="text-xl font-bold text-red-700">{isRTL ? 'איפוס נתונים' : 'Reset Data'}</h2>
               <p className="text-sm text-gray-600">{isRTL ? 'יחזיר את כל תוכן האתר לדיפולט וימחק לידים' : 'Restore default content and clear leads.'}</p>
               <button onClick={resetContent} className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold">{isRTL ? 'אפס הכל' : 'Reset All'}</button>
+            </section>
+
+            <section className="bg-white border rounded-2xl p-5 space-y-3">
+              <h2 className="text-xl font-bold">{isRTL ? 'שינוי סיסמת אדמין' : 'Change Admin Password'}</h2>
+              <div className="grid md:grid-cols-3 gap-2">
+                <input
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="border rounded-lg px-3 py-2"
+                  placeholder={isRTL ? 'סיסמה נוכחית' : 'Current password'}
+                />
+                <input
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="border rounded-lg px-3 py-2"
+                  placeholder={isRTL ? 'סיסמה חדשה' : 'New password'}
+                />
+                <input
+                  type="password"
+                  value={newPassword2}
+                  onChange={(e) => setNewPassword2(e.target.value)}
+                  className="border rounded-lg px-3 py-2"
+                  placeholder={isRTL ? 'אימות סיסמה חדשה' : 'Confirm new password'}
+                />
+              </div>
+              <button onClick={changePassword} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold">
+                {isRTL ? 'עדכן סיסמה' : 'Update Password'}
+              </button>
+              {settingsMessage && <p className="text-sm text-gray-700">{settingsMessage}</p>}
             </section>
           </div>
         )}

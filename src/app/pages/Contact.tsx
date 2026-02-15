@@ -5,6 +5,7 @@ import { useSiteContent } from '../context/SiteContentContext';
 
 interface ContactFormState {
   fullName: string;
+  phone: string;
   email: string;
   company: string;
   budget: string;
@@ -14,6 +15,7 @@ interface ContactFormState {
 
 const initialForm: ContactFormState = {
   fullName: '',
+  phone: '',
   email: '',
   company: '',
   budget: '',
@@ -72,6 +74,22 @@ export function Contact() {
                       required
                     />
                   </div>
+                  <div>
+                    <label className="block text-gray-900 font-semibold mb-2">
+                      {isRTL ? 'טלפון' : 'Phone'}
+                    </label>
+                    <input
+                      type="tel"
+                      value={formData.phone}
+                      onChange={(e) => onChange('phone', e.target.value)}
+                      className="w-full px-5 py-4 rounded-2xl border-2 border-gray-200 focus:border-blue-600 focus:outline-none transition-colors"
+                      placeholder={isRTL ? '050-000-0000' : '+1 555 000 0000'}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
                   <div>
                     <label className="block text-gray-900 font-semibold mb-2">
                       {isRTL ? 'אימייל' : 'Email'}

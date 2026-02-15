@@ -49,6 +49,7 @@ export interface FAQItem {
 export interface LeadItem {
   id: string;
   fullName: string;
+  phone: string;
   email: string;
   company: string;
   budget: string;
@@ -226,6 +227,16 @@ function parseStoredContent(value: string | null): SiteContent | null {
   }
 }
 
+function normalizeContent(content: SiteContent): SiteContent {
+  return {
+    ...content,
+    leads: (content.leads || []).map((lead) => ({
+      ...lead,
+      phone: lead.phone || '',
+    })),
+  };
+}
+
 export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [hydrated, setHydrated] = useState(false);
@@ -233,7 +244,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const stored = parseStoredContent(localStorage.getItem(STORAGE_KEY));
     if (stored) {
-      setContent(stored);
+      setContent(normalizeContent(stored));
     }
     setHydrated(true);
   }, []);
