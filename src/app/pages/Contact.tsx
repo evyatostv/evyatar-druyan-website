@@ -24,7 +24,7 @@ const initialForm: ContactFormState = {
 };
 
 export function Contact() {
-  const { language } = useLanguage();
+  const { language, t } = useLanguage();
   const isRTL = language === 'he';
   const { addLead, content } = useSiteContent();
   const [formData, setFormData] = useState<ContactFormState>(initialForm);
@@ -40,11 +40,7 @@ export function Contact() {
     setSubmitError('');
     const success = await addLead(formData);
     if (!success) {
-      setSubmitError(
-        isRTL
-          ? 'השליחה נקלטה זמנית. אם צריך, ניצור איתך קשר ידנית.'
-          : 'Submission was received temporarily. We will contact you manually if needed.',
-      );
+      setSubmitError(t('genericSubmitFallback'));
     }
     setFormData(initialForm);
     setSent(true);
@@ -53,10 +49,10 @@ export function Contact() {
 
   return (
     <div className="pt-20 bg-gradient-to-b from-gray-50 to-white min-h-screen">
-      <section className="py-28">
-        <div className="container mx-auto px-6 max-w-5xl">
+      <section className="py-20 sm:py-24 lg:py-28">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="text-center mb-16" dir={isRTL ? 'rtl' : 'ltr'}>
-            <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
               {isRTL ? 'בוא נדבר על הפרויקט שלך' : "Let's Talk About Your Project"}
             </h1>
             <p className="text-2xl text-gray-600 max-w-3xl mx-auto font-light">

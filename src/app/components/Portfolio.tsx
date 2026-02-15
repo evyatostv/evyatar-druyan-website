@@ -10,41 +10,51 @@ export function Portfolio() {
   const { content } = useSiteContent();
   const projects = content.projects;
 
+  const copy = {
+    he: {
+      title: 'מקרי בוחן עם תוצאה מדידה',
+      subtitle: 'פרויקטים אמיתיים שהשפיעו על צמיחה, מכירות ולידים',
+      cta: 'לכל מקרי הבוחן',
+    },
+    en: {
+      title: 'Case Studies with Measurable Impact',
+      subtitle: 'Real projects that improved growth, sales, and lead quality',
+      cta: 'View All Case Studies',
+    },
+  }[language];
+
   return (
-    <section className="bg-gradient-to-b from-gray-50/30 to-white py-28">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
-          <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
-            תוצאות מוכחות
+    <section className="bg-gradient-to-b from-gray-50/40 to-white py-20 sm:py-24 lg:py-20 sm:py-24 lg:py-28" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+        <div className="text-center mb-14 sm:mb-16 lg:mb-20">
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-6 tracking-tight">
+            {copy.title}
           </h2>
-          <p className="text-2xl text-gray-500 max-w-2xl mx-auto font-light">
-            פרויקטים אמיתיים עם השפעה עסקית מדידה
-          </p>
+          <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto font-light">{copy.subtitle}</p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-14">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-14">
           {projects.map((project) => (
             <div
               key={project.id}
-              className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
-              dir={isRTL ? 'rtl' : 'ltr'}
+              className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500"
             >
-              <div className="relative h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
+              <div className="relative h-52 sm:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
                 <ImageWithFallback
                   src={project.image}
                   alt={isRTL ? project.titleHe : project.titleEn}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-              <div className="p-8">
-                <div className="inline-block text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
+              <div className="p-6 sm:p-8">
+                <div className="inline-block text-xs sm:text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
                   {isRTL ? project.categoryHe : project.categoryEn}
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">{isRTL ? project.titleHe : project.titleEn}</h3>
-                <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-5 py-3 rounded-2xl">
-                  <TrendingUp className="w-6 h-6 text-green-600" />
-                  <span className="font-bold text-lg">{isRTL ? project.resultHe : project.resultEn}</span>
+                <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{isRTL ? project.titleHe : project.titleEn}</h3>
+                <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-4 sm:px-5 py-3 rounded-2xl">
+                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                  <span className="font-bold text-base sm:text-lg">{isRTL ? project.resultHe : project.resultEn}</span>
                 </div>
               </div>
             </div>
@@ -54,10 +64,10 @@ export function Portfolio() {
         <div className="text-center">
           <Link
             to="/case-studies"
-            className="bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-10 py-5 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg shadow-blue-600/25 hover:shadow-xl hover:shadow-blue-600/40 inline-flex items-center gap-3 hover:scale-105"
+            className="bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-7 sm:px-10 py-4 sm:py-5 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 shadow-lg shadow-blue-600/25 hover:shadow-xl inline-flex items-center gap-3"
           >
             <ArrowLeft className="w-5 h-5" />
-            צפה במקרי בוחן מלאים
+            {copy.cta}
           </Link>
         </div>
       </div>

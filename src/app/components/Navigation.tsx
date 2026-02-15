@@ -20,23 +20,22 @@ export function Navigation() {
 
   return (
     <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-gray-200 z-50 shadow-sm">
-      <div className="container mx-auto px-6 max-w-7xl">
-        <div className="flex items-center justify-between h-20">
-          {/* Logo */}
-          <Link to="/" className="text-2xl font-bold bg-gradient-to-l from-blue-600 to-teal-600 bg-clip-text text-transparent">
+      <div className="container mx-auto px-4 sm:px-6 max-w-7xl">
+        <div className="flex items-center justify-between h-[4.5rem] sm:h-20">
+          <Link to="/" className="text-xl sm:text-2xl font-bold bg-gradient-to-l from-blue-600 to-teal-600 bg-clip-text text-transparent">
             {isRTL ? 'דרוין עיצובים' : 'Druyan Design'}
           </Link>
 
           <button
             onClick={() => setMobileMenuOpen((prev) => !prev)}
             className="md:hidden p-2 rounded-xl border border-gray-200 text-gray-700 hover:text-blue-600 hover:border-blue-200 transition-colors"
-            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-label={mobileMenuOpen ? t('menuClose') : t('menuOpen')}
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
 
-          {/* Main Navigation */}
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-7">
             <Link
               to="/"
               onClick={closeMenus}
@@ -47,7 +46,6 @@ export function Navigation() {
               {t('home')}
             </Link>
 
-            {/* Services Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => {
@@ -99,7 +97,6 @@ export function Navigation() {
               )}
             </div>
 
-            {/* Case Studies Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => {
@@ -130,9 +127,9 @@ export function Navigation() {
                       onClick={closeMenus}
                       className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors font-semibold"
                     >
-                      {isRTL ? 'כל הפרויקטים' : 'All Projects'}
+                      {t('allProjects')}
                     </Link>
-                    <div className="border-t border-gray-100 my-2"></div>
+                    <div className="border-t border-gray-100 my-2" />
                     <Link
                       to="/results"
                       onClick={closeMenus}
@@ -185,16 +182,15 @@ export function Navigation() {
               {t('faq')}
             </Link>
 
-            {/* Language Switcher */}
             <button
               onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
               className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
+              aria-label="Switch language"
             >
               <Globe className="w-4 h-4" />
-              <span className="font-semibold">{language === 'he' ? 'EN' : 'עב'}</span>
+              <span className="font-semibold">{t('languageLabel')}</span>
             </button>
 
-            {/* CTA Button */}
             <Link
               to="/contact"
               onClick={closeMenus}
@@ -206,8 +202,8 @@ export function Navigation() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="md:hidden pb-6 border-t border-gray-200">
-            <div className="flex flex-col gap-2 pt-4" dir={isRTL ? 'rtl' : 'ltr'}>
+          <div className="md:hidden pb-5 border-t border-gray-200" dir={isRTL ? 'rtl' : 'ltr'}>
+            <div className="flex flex-col gap-1 pt-4">
               <Link to="/" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                 {t('home')}
               </Link>
@@ -220,7 +216,7 @@ export function Navigation() {
                 <ChevronDown className={`w-4 h-4 transition-transform ${servicesOpen ? 'rotate-180' : ''}`} />
               </button>
               {servicesOpen && (
-                <div className="pl-4 flex flex-col gap-1">
+                <div className={`flex flex-col gap-1 ${isRTL ? 'pr-4' : 'pl-4'}`}>
                   <Link to="/services/website-design" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                     {t('websiteDesign')}
                   </Link>
@@ -241,9 +237,9 @@ export function Navigation() {
                 <ChevronDown className={`w-4 h-4 transition-transform ${caseStudiesOpen ? 'rotate-180' : ''}`} />
               </button>
               {caseStudiesOpen && (
-                <div className="pl-4 flex flex-col gap-1">
+                <div className={`flex flex-col gap-1 ${isRTL ? 'pr-4' : 'pl-4'}`}>
                   <Link to="/case-studies" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
-                    {isRTL ? 'כל הפרויקטים' : 'All Projects'}
+                    {t('allProjects')}
                   </Link>
                   <Link to="/results" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                     {t('results')}
@@ -263,6 +259,15 @@ export function Navigation() {
               <Link to="/faq" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                 {t('faq')}
               </Link>
+
+              <button
+                onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
+                className="mt-1 flex items-center justify-center gap-2 px-4 py-2 rounded-xl border border-gray-300 text-gray-700"
+              >
+                <Globe className="w-4 h-4" />
+                <span className="font-semibold">{t('languageLabel')}</span>
+              </button>
+
               <Link
                 to="/contact"
                 onClick={closeMenus}

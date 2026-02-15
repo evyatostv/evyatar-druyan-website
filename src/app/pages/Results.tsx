@@ -90,10 +90,10 @@ export function Results() {
   return (
     <div className="pt-20 bg-white">
       {/* Hero */}
-      <section className="py-28 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-6 max-w-6xl">
+      <section className="py-20 sm:py-24 lg:py-28 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
           <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
-            <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
               {isRTL ? 'תוצאות מצטברות' : 'Aggregate Results'}
             </h1>
             <p className="text-2xl text-gray-600 max-w-3xl mx-auto font-light">
@@ -122,7 +122,7 @@ export function Results() {
 
       {/* Client Results */}
       <section className="py-20">
-        <div className="container mx-auto px-6 max-w-6xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
           <div className="text-center mb-16" dir={isRTL ? 'rtl' : 'ltr'}>
             <h2 className="text-5xl font-extrabold text-gray-900 mb-4">
               {isRTL ? 'תוצאות לקוחות' : 'Client Results'}

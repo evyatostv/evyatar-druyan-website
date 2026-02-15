@@ -5,77 +5,119 @@ import { useLanguage } from '../context/LanguageContext';
 export function Services() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
-  const services = [
-    {
-      icon: <Globe className="w-10 h-10 text-blue-600" />,
-      title: 'עיצוב אתרים',
-      description: 'אתרים מותאמים אישית שבנויים להמרות, מהירות וצמיחה. חנויות מסחר, אתרי עסקים ודפי נחיתה שהופכים מבקרים ללקוחות.',
-      benefits: ['עיצוב Mobile-First', 'אופטימיזציה ל-SEO', 'ממוקד המרות', 'טעינה מהירה'],
-      gradient: 'from-blue-50/50 to-blue-100/30',
-      borderColor: 'border-blue-200/50',
-      path: '/services/website-design',
+
+  const copy = {
+    he: {
+      title: 'שירותים שמייצרים תוצאות',
+      subtitle: 'פתרונות ממוקדים לצמיחה אמיתית בעסק',
+      cta: 'לקבלת הצעה',
+      cards: [
+        {
+          icon: <Globe className="w-9 h-9 text-blue-600" />,
+          title: 'עיצוב ופיתוח אתרים',
+          description:
+            'אתרי תדמית, חנויות ודפי נחיתה שבנויים לביצועים: מהירים, נגישים וממוקדי המרה.',
+          benefits: ['עיצוב רספונסיבי מלא', 'מבנה SEO נקי', 'חוויית משתמש מדויקת', 'ביצועים גבוהים'],
+          gradient: 'from-blue-50/50 to-blue-100/30',
+          borderColor: 'border-blue-200/50',
+          path: '/services/website-design',
+        },
+        {
+          icon: <TrendingUp className="w-9 h-9 text-teal-600" />,
+          title: 'פרסום ממומן',
+          description:
+            'ניהול קמפיינים ב-Meta, Google ו-TikTok עם שליטה בתקציב, שיפור מתמשך ותשואה מדידה.',
+          benefits: ['אסטרטגיית קמפיין', 'קריאייטיב ובדיקות', 'פילוח קהלים מדויק', 'דוחות ברורים'],
+          gradient: 'from-teal-50/50 to-teal-100/30',
+          borderColor: 'border-teal-200/50',
+          path: '/services/paid-advertising',
+        },
+        {
+          icon: <Zap className="w-9 h-9 text-purple-600" />,
+          title: 'חבילה מלאה: אתר + מודעות',
+          description:
+            'מערכת אחת שמחברת בין תשתית דיגיטלית חזקה לבין קמפיינים שמביאים לידים איכותיים.',
+          benefits: ['תהליך מקצה לקצה', 'שפה מותגית אחידה', 'מעקב תוצאות מאוחד', 'קצב צמיחה מהיר יותר'],
+          gradient: 'from-purple-50/50 to-purple-100/30',
+          borderColor: 'border-purple-200/50',
+          path: '/services/full-package',
+        },
+      ],
     },
-    {
-      icon: <TrendingUp className="w-10 h-10 text-teal-600" />,
-      title: 'פרסום ממומן',
-      description: 'קמפיינים שיווקיים ב-Meta, TikTok ו-Google. ניהול מודעות אסטרטגי ממוקד ROI, יצירת לידים וצמיחת הכנסות.',
-      benefits: ['אסטרטגיית קמפיינים', 'יצירה ובדיקת מודעות', 'טרגוט קהלים', 'מעקב ביצועים'],
-      gradient: 'from-teal-50/50 to-teal-100/30',
-      borderColor: 'border-teal-200/50',
-      path: '/services/paid-advertising',
+    en: {
+      title: 'Services Built for Growth',
+      subtitle: 'Focused solutions for measurable business impact',
+      cta: 'Get a Proposal',
+      cards: [
+        {
+          icon: <Globe className="w-9 h-9 text-blue-600" />,
+          title: 'Website Design & Development',
+          description:
+            'High-performing websites, ecommerce builds, and landing pages designed for speed and conversion.',
+          benefits: ['Fully responsive design', 'Clean SEO structure', 'Precise UX flow', 'Fast performance'],
+          gradient: 'from-blue-50/50 to-blue-100/30',
+          borderColor: 'border-blue-200/50',
+          path: '/services/website-design',
+        },
+        {
+          icon: <TrendingUp className="w-9 h-9 text-teal-600" />,
+          title: 'Paid Advertising',
+          description:
+            'Performance campaigns on Meta, Google, and TikTok with strategic testing and clear ROI visibility.',
+          benefits: ['Campaign strategy', 'Creative testing', 'Audience targeting', 'Clear reporting'],
+          gradient: 'from-teal-50/50 to-teal-100/30',
+          borderColor: 'border-teal-200/50',
+          path: '/services/paid-advertising',
+        },
+        {
+          icon: <Zap className="w-9 h-9 text-purple-600" />,
+          title: 'Full Package: Website + Ads',
+          description:
+            'An integrated system that aligns your digital foundation with campaigns that generate qualified leads.',
+          benefits: ['End-to-end execution', 'Unified brand language', 'Shared analytics view', 'Faster growth loop'],
+          gradient: 'from-purple-50/50 to-purple-100/30',
+          borderColor: 'border-purple-200/50',
+          path: '/services/full-package',
+        },
+      ],
     },
-    {
-      icon: <Zap className="w-10 h-10 text-purple-600" />,
-      title: 'חבילת אתר + מודעות',
-      description: 'מערכת צמיחה מלאה המשלבת אתר ממיר עם פרסום ממומן אסטרטגי. הפתרון המלא לעסקים מוכנים לצמיחה.',
-      benefits: ['גישה משולבת', 'מעקב מאוחד', 'ROI מקסימלי', 'ניהול מקצה לקצה'],
-      gradient: 'from-purple-50/50 to-purple-100/30',
-      borderColor: 'border-purple-200/50',
-      path: '/services/full-package',
-    },
-  ];
+  }[language];
 
   return (
-    <section className="bg-white py-28">
-      <div className="container mx-auto px-6 max-w-6xl">
-        <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
-          <h2 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 tracking-tight">
-            שירותים לצמיחה
+    <section className="bg-white py-20 sm:py-24 lg:py-20 sm:py-24 lg:py-28" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
+        <div className="text-center mb-14 sm:mb-16 lg:mb-20">
+          <h2 className="text-3xl sm:text-4xl lg:text-6xl font-extrabold text-gray-900 mb-4 sm:mb-6 tracking-tight">
+            {copy.title}
           </h2>
-          <p className="text-2xl text-gray-500 max-w-2xl mx-auto font-light">
-            בחר את השירות שמתאים ליעדי העסק שלך
-          </p>
+          <p className="text-lg sm:text-xl text-gray-500 max-w-3xl mx-auto font-light">{copy.subtitle}</p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-8">
-          {services.map((service, index) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
+          {copy.cards.map((service, index) => (
             <div
               key={index}
-              className={`relative bg-gradient-to-br ${service.gradient} backdrop-blur-sm rounded-3xl p-10 border-2 ${service.borderColor} hover:shadow-2xl hover:scale-105 transition-all duration-500 group overflow-hidden`}
-              dir={isRTL ? 'rtl' : 'ltr'}
+              className={`relative bg-gradient-to-br ${service.gradient} backdrop-blur-sm rounded-3xl p-6 sm:p-8 lg:p-9 border-2 ${service.borderColor} hover:shadow-2xl transition-all duration-500 group overflow-hidden h-full`}
             >
-              {/* Subtle glow effect */}
-              <div className="absolute inset-0 bg-gradient-to-br from-white/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
-              
-              <div className="relative z-10">
-                <div className="mb-6 inline-block p-4 bg-white/80 rounded-2xl shadow-sm">
-                  {service.icon}
-                </div>
-                <h3 className="text-3xl font-bold text-gray-900 mb-5">{service.title}</h3>
-                <p className="text-gray-600 mb-8 leading-relaxed text-lg">{service.description}</p>
-                <ul className="space-y-3 mb-10">
+              <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+
+              <div className="relative z-10 h-full flex flex-col">
+                <div className="mb-5 inline-block p-3 bg-white/80 rounded-2xl shadow-sm">{service.icon}</div>
+                <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{service.title}</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed text-base sm:text-lg">{service.description}</p>
+                <ul className="space-y-2.5 mb-8 flex-1">
                   {service.benefits.map((benefit, i) => (
                     <li key={i} className="text-gray-700 flex items-center gap-3">
-                      <span className="w-2 h-2 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full"></span>
-                      <span className="font-medium">{benefit}</span>
+                      <span className="w-2 h-2 bg-gradient-to-r from-blue-600 to-teal-600 rounded-full" />
+                      <span className="font-medium text-sm sm:text-base">{benefit}</span>
                     </li>
                   ))}
                 </ul>
                 <Link
                   to={service.path}
-                  className="block text-center w-full bg-gradient-to-l from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-8 py-4 rounded-full font-semibold transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+                  className="block text-center w-full bg-gradient-to-l from-gray-900 to-gray-800 hover:from-gray-800 hover:to-gray-700 text-white px-6 py-3.5 rounded-full font-semibold transition-all duration-300 shadow-lg"
                 >
-                  קבל הצעת מחיר
+                  {copy.cta}
                 </Link>
               </div>
             </div>

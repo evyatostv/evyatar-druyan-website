@@ -141,7 +141,7 @@ export function CaseStudyDetail() {
     <div className="pt-20 bg-white">
       {/* Hero Section */}
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div dir={isRTL ? 'rtl' : 'ltr'}>
             <div className="inline-block text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-5 py-2 rounded-full font-semibold mb-6">
               {data.category}
@@ -176,7 +176,7 @@ export function CaseStudyDetail() {
 
       {/* Challenge Section */}
       <section className="py-20">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="grid lg:grid-cols-2 gap-12 items-start" dir={isRTL ? 'rtl' : 'ltr'}>
             <div>
               <div className="flex items-center gap-4 mb-6">
@@ -203,7 +203,7 @@ export function CaseStudyDetail() {
 
       {/* Solution Section */}
       <section className="py-20 bg-gradient-to-b from-gray-50/50 to-white">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="grid lg:grid-cols-2 gap-12 items-start" dir={isRTL ? 'rtl' : 'ltr'}>
             <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-3xl p-8 border-2 border-blue-100">
               <ul className="space-y-4">
@@ -230,7 +230,7 @@ export function CaseStudyDetail() {
 
       {/* Process Section */}
       <section className="py-20">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="text-center mb-16" dir={isRTL ? 'rtl' : 'ltr'}>
             <h2 className="text-5xl font-extrabold text-gray-900 mb-4">{data.process.title}</h2>
           </div>
@@ -251,7 +251,7 @@ export function CaseStudyDetail() {
 
       {/* Results Section */}
       <section className="py-20 bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="text-center mb-16" dir={isRTL ? 'rtl' : 'ltr'}>
             <h2 className="text-5xl font-extrabold text-white mb-6">{data.results.title}</h2>
             <p className="text-2xl text-blue-50 max-w-3xl mx-auto leading-relaxed">
@@ -275,7 +275,7 @@ export function CaseStudyDetail() {
 
       {/* CTA Section */}
       <section className="py-20">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl text-center">
           <div dir={isRTL ? 'rtl' : 'ltr'}>
             <h3 className="text-4xl font-bold text-gray-900 mb-6">
               {isRTL ? 'מוכן לתוצאות דומות?' : 'Ready for Similar Results?'}

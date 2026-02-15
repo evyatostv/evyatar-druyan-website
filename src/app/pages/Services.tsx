@@ -143,15 +143,15 @@ export function ServiceDetail() {
   return (
     <div className="pt-20 bg-white">
       {/* Hero Section */}
-      <section className="py-28 bg-gradient-to-b from-gray-50 to-white">
-        <div className="container mx-auto px-6 max-w-5xl">
+      <section className="py-20 sm:py-24 lg:py-28 bg-gradient-to-b from-gray-50 to-white">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="text-center" dir={isRTL ? 'rtl' : 'ltr'}>
             {IconComponent && (
               <div className="inline-block p-6 bg-gradient-to-br from-blue-50 to-teal-50 rounded-3xl mb-8">
                 <IconComponent className="w-16 h-16 text-blue-600" />
               </div>
             )}
-            <h1 className="text-6xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
+            <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
               {data.title}
             </h1>
             <p className="text-3xl text-gray-600 mb-10 font-light max-w-3xl mx-auto">
@@ -166,7 +166,7 @@ export function ServiceDetail() {
 
       {/* Deliverables */}
       <section className="py-20">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div dir={isRTL ? 'rtl' : 'ltr'}>
             <h2 className="text-5xl font-extrabold text-gray-900 mb-12 text-center">
               {data.deliverables.title}
@@ -190,7 +190,7 @@ export function ServiceDetail() {
 
       {/* Workflow */}
       <section className="py-20 bg-gradient-to-b from-gray-50/50 to-white">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div dir={isRTL ? 'rtl' : 'ltr'}>
             <h2 className="text-5xl font-extrabold text-gray-900 mb-12 text-center">
               {data.workflow.title}
@@ -219,7 +219,7 @@ export function ServiceDetail() {
 
       {/* For Who & Positioning */}
       <section className="py-20">
-        <div className="container mx-auto px-6 max-w-5xl">
+        <div className="container mx-auto px-4 sm:px-6 max-w-5xl">
           <div className="grid lg:grid-cols-2 gap-12">
             <div className="bg-gradient-to-br from-blue-50 to-teal-50 rounded-3xl p-10 border-2 border-blue-100" dir={isRTL ? 'rtl' : 'ltr'}>
               <h2 className="text-4xl font-bold text-gray-900 mb-8">{data.forWho.title}</h2>
@@ -242,7 +242,7 @@ export function ServiceDetail() {
 
       {/* CTA */}
       <section className="py-20 bg-gradient-to-br from-blue-600 via-blue-700 to-teal-600">
-        <div className="container mx-auto px-6 max-w-4xl text-center">
+        <div className="container mx-auto px-4 sm:px-6 max-w-4xl text-center">
           <div dir={isRTL ? 'rtl' : 'ltr'}>
             <h3 className="text-5xl font-extrabold text-white mb-8">
               {isRTL ? 'מוכן להתחיל?' : 'Ready to Get Started?'}

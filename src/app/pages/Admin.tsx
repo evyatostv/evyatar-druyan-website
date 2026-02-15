@@ -88,9 +88,7 @@ function safeCompare(a: string, b: string) {
 }
 
 function toLeadErrorMessage(error: unknown, isRTL: boolean) {
-  if (!IS_DEV) {
-    return isRTL ? 'לא ניתן לטעון לידים כרגע' : 'Unable to load leads right now';
-  }
+  if (!IS_DEV) return isRTL ? 'לא ניתן לטעון לידים כרגע' : 'Unable to load leads right now';
   const raw =
     error instanceof Error
       ? error.message
@@ -99,10 +97,10 @@ function toLeadErrorMessage(error: unknown, isRTL: boolean) {
         : '';
   if (raw.includes('ADMIN_ACCESS_REQUIRED')) {
     return isRTL
-      ? 'למשתמש הזה אין הרשאת Admin לטעינת לידים. הוסף אותו לטבלת admin_users ב-Supabase.'
-      : 'This user is not an allowed admin for leads. Add this user to admin_users in Supabase.';
+      ? 'למשתמש הזה אין הרשאת אדמין לטעינת לידים.'
+      : 'This user is not allowed to load leads.';
   }
-  return isRTL ? 'שגיאה בטעינת לידים מ-Supabase' : 'Failed to load leads from Supabase';
+  return isRTL ? 'לא ניתן לטעון לידים כרגע' : 'Unable to load leads right now';
 }
 
 export function Admin() {
@@ -515,7 +513,7 @@ export function Admin() {
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold text-gray-900">{isRTL ? 'לוח ניהול' : 'Admin Dashboard'}</h1>
             <p className="text-sm text-gray-600">/admin</p>
           </div>
           <div className="flex items-center gap-2">
@@ -555,10 +553,10 @@ export function Admin() {
         {activeTab === 'dashboard' && (
           <div className="space-y-4">
             <div className="grid md:grid-cols-4 gap-4">
-              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Leads</p><p className="text-3xl font-bold">{content.leads.length}</p></div>
-              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Projects</p><p className="text-3xl font-bold">{content.projects.length}</p></div>
-              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Articles</p><p className="text-3xl font-bold">{content.articles.length}</p></div>
-              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">FAQ</p><p className="text-3xl font-bold">{content.faqs.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">{isRTL ? 'לידים' : 'Leads'}</p><p className="text-3xl font-bold">{content.leads.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">{isRTL ? 'פרויקטים' : 'Projects'}</p><p className="text-3xl font-bold">{content.projects.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">{isRTL ? 'כתבות' : 'Articles'}</p><p className="text-3xl font-bold">{content.articles.length}</p></div>
+              <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">{isRTL ? 'שאלות נפוצות' : 'FAQ'}</p><p className="text-3xl font-bold">{content.faqs.length}</p></div>
             </div>
             <div className="bg-white border rounded-2xl p-5">
               <p className="text-gray-500 text-sm">{isRTL ? 'סטטוס דאטה' : 'Data Status'}</p>

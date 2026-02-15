@@ -7,7 +7,7 @@ export function Hero() {
   const isRTL = language === 'he';
 
   return (
-    <section className="druyan-hero relative overflow-hidden py-24 md:py-32" dir={isRTL ? 'rtl' : 'ltr'}>
+    <section className="druyan-hero relative overflow-hidden py-20 sm:py-24 md:py-32" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="hero-noise" aria-hidden="true" />
 
       <div className="container relative z-10 mx-auto max-w-7xl px-5 sm:px-6 lg:px-8">
@@ -37,10 +37,10 @@ export function Hero() {
                 : 'Bold brand identity, fast websites, and landing pages that convert. Strategy, design, and development in one place.'}
             </p>
 
-            <div className="name-play" aria-label="Druyan Design bilingual brand">
-              <span>Druyan Design</span>
-              <span>דרוין עיצובים</span>
-              <span>Druyan Design</span>
+            <div className="name-play" aria-label={isRTL ? 'Druyan Design brand' : 'Druyan Design brand'}>
+              <span>{isRTL ? 'דרוין עיצובים' : 'Druyan Design'}</span>
+              <span>{isRTL ? 'סטודיו דיגיטל' : 'Digital Studio'}</span>
+              <span>{isRTL ? 'ביצועים ותוצאות' : 'Performance & Growth'}</span>
             </div>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
