@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSiteContent, HomeSectionId, LeadItem, ProjectItem, ArticleItem, FAQItem } from '../context/SiteContentContext';
 import { useLanguage } from '../context/LanguageContext';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 
 const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
@@ -94,6 +95,7 @@ export function Admin() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [setupPassword, setSetupPassword] = useState('');
   const [setupPassword2, setSetupPassword2] = useState('');
+  const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [settingsMessage, setSettingsMessage] = useState('');
@@ -150,6 +152,24 @@ export function Admin() {
   }, [authReady]);
 
   useEffect(() => {
+    let mounted = true;
+    if (isSupabaseConfigured && supabase) {
+      supabase.auth.getSession().then(({ data }) => {
+        if (!mounted) return;
+        setIsAuthenticated(Boolean(data.session?.user));
+        setAuthReady(true);
+      });
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setIsAuthenticated(Boolean(session?.user));
+      });
+      return () => {
+        mounted = false;
+        subscription.unsubscribe();
+      };
+    }
+
     setAuthReady(true);
     const rawSession = sessionStorage.getItem(SESSION_STORAGE_KEY);
     if (!rawSession) return;
@@ -219,6 +239,22 @@ export function Admin() {
 
   const login = async () => {
     setAuthError('');
+    if (isSupabaseConfigured && supabase) {
+      if (!loginEmail.trim()) {
+        setAuthError(isRTL ? 'הכנס אימייל אדמין' : 'Enter admin email');
+        return;
+      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail.trim(),
+        password: loginPassword,
+      });
+      if (error) {
+        setAuthError(isRTL ? 'התחברות נכשלה. בדוק אימייל/סיסמה' : 'Login failed. Check email/password');
+        return;
+      }
+      setIsAuthenticated(true);
+      return;
+    }
     if (!authRecord) return;
     const isValid = await verifyPassword(loginPassword, authRecord);
     if (!isValid) {
@@ -232,6 +268,25 @@ export function Admin() {
   const changePassword = async () => {
     setSettingsMessage('');
     setAuthError('');
+    if (isSupabaseConfigured && supabase) {
+      if (!ensureStrongPassword(newPassword)) {
+        setSettingsMessage(isRTL ? 'סיסמה חדשה חלשה מדי' : 'New password is too weak');
+        return;
+      }
+      if (newPassword !== newPassword2) {
+        setSettingsMessage(isRTL ? 'אימות הסיסמה החדשה לא תואם' : 'New password confirmation does not match');
+        return;
+      }
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) {
+        setSettingsMessage(isRTL ? 'עדכון סיסמה נכשל' : 'Password update failed');
+        return;
+      }
+      setNewPassword('');
+      setNewPassword2('');
+      setSettingsMessage(isRTL ? 'הסיסמה עודכנה בהצלחה' : 'Password updated successfully');
+      return;
+    }
     if (!authRecord) return;
     const isCurrentValid = await verifyPassword(currentPassword, authRecord);
     if (!isCurrentValid) {
@@ -275,8 +330,12 @@ export function Admin() {
   const latestLead = content.leads[0];
 
   const logout = () => {
+    if (isSupabaseConfigured && supabase) {
+      supabase.auth.signOut();
+    }
     sessionStorage.removeItem(SESSION_STORAGE_KEY);
     setIsAuthenticated(false);
+    setLoginEmail('');
     setLoginPassword('');
   };
 
@@ -301,7 +360,7 @@ export function Admin() {
 
   if (!authReady) return null;
 
-  if (!authRecord && !isAuthenticated) {
+  if (!isSupabaseConfigured && !authRecord && !isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
@@ -339,8 +398,21 @@ export function Admin() {
       <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'כניסת אדמין' : 'Admin Login'}</h1>
-          <p className="text-gray-600 mb-6">{isRTL ? 'הכנס סיסמה כדי לנהל את האתר' : 'Enter password to manage the website'}</p>
+          <p className="text-gray-600 mb-6">
+            {isSupabaseConfigured
+              ? (isRTL ? 'התחבר עם משתמש האדמין של Supabase' : 'Sign in with your Supabase admin user')
+              : (isRTL ? 'הכנס סיסמה כדי לנהל את האתר' : 'Enter password to manage the website')}
+          </p>
           <div className="space-y-3">
+            {isSupabaseConfigured && (
+              <input
+                type="email"
+                placeholder={isRTL ? 'אימייל אדמין' : 'Admin email'}
+                value={loginEmail}
+                onChange={(e) => setLoginEmail(e.target.value)}
+                className="w-full border border-gray-300 rounded-xl px-4 py-3"
+              />
+            )}
             <input
               type="password"
               placeholder={isRTL ? 'סיסמה' : 'Password'}
@@ -407,6 +479,14 @@ export function Admin() {
               <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Projects</p><p className="text-3xl font-bold">{content.projects.length}</p></div>
               <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">Articles</p><p className="text-3xl font-bold">{content.articles.length}</p></div>
               <div className="bg-white border rounded-2xl p-5"><p className="text-gray-500 text-sm">FAQ</p><p className="text-3xl font-bold">{content.faqs.length}</p></div>
+            </div>
+            <div className="bg-white border rounded-2xl p-5">
+              <p className="text-gray-500 text-sm">{isRTL ? 'סטטוס דאטה' : 'Data Status'}</p>
+              <p className="text-lg font-semibold">
+                {isSupabaseConfigured
+                  ? (isRTL ? 'מחובר ל-Supabase' : 'Connected to Supabase')
+                  : (isRTL ? 'עובד לוקאלית (localStorage)' : 'Running locally (localStorage)')}
+              </p>
             </div>
             <div className="bg-white border rounded-2xl p-5">
               <h2 className="text-xl font-bold mb-3">{isRTL ? 'ליד אחרון' : 'Latest Lead'}</h2>
@@ -642,14 +722,16 @@ export function Admin() {
 
             <section className="bg-white border rounded-2xl p-5 space-y-3">
               <h2 className="text-xl font-bold">{isRTL ? 'שינוי סיסמת אדמין' : 'Change Admin Password'}</h2>
-              <div className="grid md:grid-cols-3 gap-2">
-                <input
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="border rounded-lg px-3 py-2"
-                  placeholder={isRTL ? 'סיסמה נוכחית' : 'Current password'}
-                />
+              <div className={`grid gap-2 ${isSupabaseConfigured ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
+                {!isSupabaseConfigured && (
+                  <input
+                    type="password"
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    className="border rounded-lg px-3 py-2"
+                    placeholder={isRTL ? 'סיסמה נוכחית' : 'Current password'}
+                  />
+                )}
                 <input
                   type="password"
                   value={newPassword}

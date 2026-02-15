@@ -1,4 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
+import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 
 export type HomeSectionId =
   | 'hero'
@@ -79,6 +80,10 @@ export interface SiteContent {
 }
 
 const STORAGE_KEY = 'site-content-v1';
+const REMOTE_TABLE = 'site_content';
+const REMOTE_ROW_ID = 'main';
+const REMOTE_SAVE_DEBOUNCE_MS = 800;
+const LEADS_TABLE = 'leads';
 
 const defaultContent: SiteContent = {
   projects: [
@@ -214,14 +219,23 @@ interface SiteContentContextType {
 
 const SiteContentContext = createContext<SiteContentContextType | undefined>(undefined);
 
+function isValidSiteContentObject(parsed: unknown): parsed is SiteContent {
+  if (!parsed || typeof parsed !== 'object') return false;
+  const candidate = parsed as SiteContent;
+  if (!Array.isArray(candidate.projects) || !Array.isArray(candidate.articles) || !Array.isArray(candidate.faqs)) {
+    return false;
+  }
+  if (!Array.isArray(candidate.homeSections) || !candidate.siteInfo || typeof candidate.siteInfo !== 'object') {
+    return false;
+  }
+  return true;
+}
+
 function parseStoredContent(value: string | null): SiteContent | null {
   if (!value) return null;
   try {
-    const parsed = JSON.parse(value) as SiteContent;
-    if (!parsed || !Array.isArray(parsed.projects) || !Array.isArray(parsed.articles) || !Array.isArray(parsed.faqs)) {
-      return null;
-    }
-    return parsed;
+    const parsed = JSON.parse(value) as unknown;
+    return isValidSiteContentObject(parsed) ? parsed : null;
   } catch {
     return null;
   }
@@ -237,35 +251,216 @@ function normalizeContent(content: SiteContent): SiteContent {
   };
 }
 
+async function loadRemoteContent(): Promise<SiteContent | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from(REMOTE_TABLE)
+    .select('payload')
+    .eq('id', REMOTE_ROW_ID)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  const payload = data?.payload as unknown;
+  if (!payload || !isValidSiteContentObject(payload)) {
+    return null;
+  }
+
+  return payload;
+}
+
+async function canWriteRemoteContent() {
+  if (!supabase) return false;
+  const { data } = await supabase.auth.getSession();
+  return Boolean(data.session?.user);
+}
+
+async function saveRemoteContent(content: SiteContent) {
+  if (!supabase) return;
+  const canWrite = await canWriteRemoteContent();
+  if (!canWrite) return;
+  const { error } = await supabase.from(REMOTE_TABLE).upsert(
+    {
+      id: REMOTE_ROW_ID,
+      payload: { ...content, leads: [] },
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'id' },
+  );
+  if (error) {
+    throw error;
+  }
+}
+
+async function loadRemoteLeads(): Promise<LeadItem[] | null> {
+  if (!supabase) return null;
+  const { data, error } = await supabase
+    .from(LEADS_TABLE)
+    .select('id,full_name,phone,email,company,budget,project_type,details,created_at')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data || []).map((row) => ({
+    id: row.id,
+    fullName: row.full_name || '',
+    phone: row.phone || '',
+    email: row.email || '',
+    company: row.company || '',
+    budget: row.budget || '',
+    projectType: row.project_type || '',
+    details: row.details || '',
+    createdAt: row.created_at || new Date().toISOString(),
+  }));
+}
+
+async function saveLeadRemote(lead: Omit<LeadItem, 'id' | 'createdAt'>) {
+  if (!supabase) return null;
+  const payload = {
+    full_name: lead.fullName,
+    phone: lead.phone,
+    email: lead.email,
+    company: lead.company,
+    budget: lead.budget,
+    project_type: lead.projectType,
+    details: lead.details,
+  };
+
+  const { data, error } = await supabase
+    .from(LEADS_TABLE)
+    .insert(payload)
+    .select('id, created_at')
+    .single();
+
+  if (error) {
+    throw error;
+  }
+
+  return {
+    id: data.id as string,
+    createdAt: data.created_at as string,
+  };
+}
+
 export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [hydrated, setHydrated] = useState(false);
+  const remoteSaveTimerRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const stored = parseStoredContent(localStorage.getItem(STORAGE_KEY));
-    if (stored) {
-      setContent(normalizeContent(stored));
-    }
-    setHydrated(true);
+    let cancelled = false;
+
+    const hydrate = async () => {
+      const stored = parseStoredContent(localStorage.getItem(STORAGE_KEY));
+      let next = stored ? normalizeContent(stored) : defaultContent;
+
+      if (isSupabaseConfigured) {
+        try {
+          const remote = await loadRemoteContent();
+          if (remote) {
+            next = normalizeContent(remote);
+          } else {
+            await saveRemoteContent(next);
+          }
+          try {
+            const remoteLeads = await loadRemoteLeads();
+            if (remoteLeads) {
+              next = { ...next, leads: remoteLeads };
+            }
+          } catch {
+            // leads may be protected for non-admin sessions
+          }
+        } catch (error) {
+          console.error('Supabase load failed, fallback to local cache.', error);
+        }
+      }
+
+      if (cancelled) return;
+      setContent(next);
+      setHydrated(true);
+    };
+
+    hydrate();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
     if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(content));
+
+    if (!isSupabaseConfigured) return;
+    if (remoteSaveTimerRef.current) {
+      window.clearTimeout(remoteSaveTimerRef.current);
+    }
+
+    remoteSaveTimerRef.current = window.setTimeout(() => {
+      saveRemoteContent(normalizeContent(content)).catch((error) => {
+        console.error('Supabase save failed, changes remain local.', error);
+      });
+    }, REMOTE_SAVE_DEBOUNCE_MS);
+
+    return () => {
+      if (remoteSaveTimerRef.current) {
+        window.clearTimeout(remoteSaveTimerRef.current);
+      }
+    };
   }, [content, hydrated]);
 
+  useEffect(() => {
+    if (!supabase || !isSupabaseConfigured) return;
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!session?.user) return;
+      try {
+        const remoteLeads = await loadRemoteLeads();
+        if (remoteLeads) {
+          setContent((prev) => ({ ...prev, leads: remoteLeads }));
+        }
+      } catch {
+        // ignore
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   const addLead = (lead: Omit<LeadItem, 'id' | 'createdAt'>) => {
+    const fallbackLead: LeadItem = {
+      ...lead,
+      id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
+      createdAt: new Date().toISOString(),
+    };
+
     setContent((prev) => ({
       ...prev,
-      leads: [
-        {
-          ...lead,
-          id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
-          createdAt: new Date().toISOString(),
-        },
-        ...prev.leads,
-      ],
+      leads: [fallbackLead, ...prev.leads],
     }));
+
+    if (isSupabaseConfigured) {
+      saveLeadRemote(lead)
+        .then((remoteResult) => {
+          if (!remoteResult) return;
+          setContent((prev) => ({
+            ...prev,
+            leads: prev.leads.map((item) =>
+              item.id === fallbackLead.id
+                ? { ...item, id: remoteResult.id, createdAt: remoteResult.createdAt }
+                : item,
+            ),
+          }));
+        })
+        .catch((error) => {
+          console.error('Supabase lead insert failed, lead kept locally.', error);
+        });
+    }
   };
 
   const resetContent = () => {
