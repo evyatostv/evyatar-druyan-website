@@ -6,7 +6,7 @@ import { isSupabaseConfigured, supabase } from '../../lib/supabase';
 const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
 const PBKDF2_ITERATIONS = 210000;
-const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 12;
+const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30;
 
 interface AdminAuthRecord {
   salt: string;
@@ -87,7 +87,7 @@ function safeCompare(a: string, b: string) {
 }
 
 export function Admin() {
-  const { content, setContent, resetContent } = useSiteContent();
+  const { content, setContent, refreshLeads, resetContent } = useSiteContent();
   const { language, setLanguage } = useLanguage();
   const isRTL = language === 'he';
 
@@ -99,6 +99,7 @@ export function Admin() {
   const [loginPassword, setLoginPassword] = useState('');
   const [authError, setAuthError] = useState('');
   const [settingsMessage, setSettingsMessage] = useState('');
+  const [leadsError, setLeadsError] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPassword2, setNewPassword2] = useState('');
@@ -171,7 +172,7 @@ export function Admin() {
     }
 
     setAuthReady(true);
-    const rawSession = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    const rawSession = localStorage.getItem(SESSION_STORAGE_KEY);
     if (!rawSession) return;
     try {
       const parsed = JSON.parse(rawSession) as AdminSessionRecord;
@@ -182,12 +183,25 @@ export function Admin() {
     } catch {
       // invalid session data
     }
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
   }, []);
 
   const setSession = () => {
     const session: AdminSessionRecord = { expiresAt: Date.now() + SESSION_MAX_AGE_MS };
-    sessionStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+    localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  };
+
+  const onAuthKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      if (!isAuthenticated) {
+        if (!isSupabaseConfigured && !authRecord) {
+          createPassword();
+        } else {
+          login();
+        }
+      }
+    }
   };
 
   const ensureStrongPassword = (password: string) => {
@@ -333,7 +347,7 @@ export function Admin() {
     if (isSupabaseConfigured && supabase) {
       supabase.auth.signOut();
     }
-    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+    localStorage.removeItem(SESSION_STORAGE_KEY);
     setIsAuthenticated(false);
     setLoginEmail('');
     setLoginPassword('');
@@ -358,11 +372,34 @@ export function Admin() {
     finalCta: 'Final CTA',
   };
 
+  useEffect(() => {
+    if (!isAuthenticated || !isSupabaseConfigured) return;
+    refreshLeads().catch((error) => {
+      setLeadsError(isRTL ? 'שגיאה בטעינת לידים מ-Supabase' : 'Failed to load leads from Supabase');
+      console.error(error);
+    });
+  }, [isAuthenticated, isSupabaseConfigured, refreshLeads, isRTL]);
+
+  const onAdminHotkeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!event.altKey) return;
+    const tabMap: Record<string, typeof activeTab> = {
+      '1': 'dashboard',
+      '2': 'leads',
+      '3': 'content',
+      '4': 'settings',
+    };
+    const nextTab = tabMap[event.key];
+    if (nextTab) {
+      event.preventDefault();
+      setActiveTab(nextTab);
+    }
+  };
+
   if (!authReady) return null;
 
   if (!isSupabaseConfigured && !authRecord && !isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'הגדרת אדמין ראשונה' : 'First Admin Setup'}</h1>
           <p className="text-gray-600 mb-6">
@@ -374,6 +411,7 @@ export function Admin() {
               placeholder={isRTL ? 'סיסמה חדשה' : 'New password'}
               value={setupPassword}
               onChange={(e) => setSetupPassword(e.target.value)}
+              onKeyDown={onAuthKeyDown}
               className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
             <input
@@ -381,6 +419,7 @@ export function Admin() {
               placeholder={isRTL ? 'אימות סיסמה' : 'Confirm password'}
               value={setupPassword2}
               onChange={(e) => setSetupPassword2(e.target.value)}
+              onKeyDown={onAuthKeyDown}
               className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
             {authError && <p className="text-red-600 text-sm">{authError}</p>}
@@ -395,7 +434,7 @@ export function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'כניסת אדמין' : 'Admin Login'}</h1>
           <p className="text-gray-600 mb-6">
@@ -410,6 +449,7 @@ export function Admin() {
                 placeholder={isRTL ? 'אימייל אדמין' : 'Admin email'}
                 value={loginEmail}
                 onChange={(e) => setLoginEmail(e.target.value)}
+                onKeyDown={onAuthKeyDown}
                 className="w-full border border-gray-300 rounded-xl px-4 py-3"
               />
             )}
@@ -418,6 +458,7 @@ export function Admin() {
               placeholder={isRTL ? 'סיסמה' : 'Password'}
               value={loginPassword}
               onChange={(e) => setLoginPassword(e.target.value)}
+              onKeyDown={onAuthKeyDown}
               className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
             {authError && <p className="text-red-600 text-sm">{authError}</p>}
@@ -431,7 +472,7 @@ export function Admin() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
+    <div className="admin-shell min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'} onKeyDown={onAdminHotkeys}>
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
@@ -505,6 +546,15 @@ export function Admin() {
         {activeTab === 'leads' && (
           <div className="bg-white border rounded-2xl p-5 space-y-4">
             <h2 className="text-xl font-bold">{isRTL ? 'לידים שהתקבלו' : 'Received Leads'}</h2>
+            {leadsError && <p className="text-sm text-red-600">{leadsError}</p>}
+            {isSupabaseConfigured && (
+              <button
+                onClick={() => refreshLeads().catch(() => setLeadsError(isRTL ? 'שגיאה בטעינת לידים' : 'Failed to refresh leads'))}
+                className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold"
+              >
+                {isRTL ? 'רענן לידים' : 'Refresh Leads'}
+              </button>
+            )}
             {content.leads.length === 0 && <p className="text-gray-600">{isRTL ? 'עדיין אין לידים' : 'No leads yet'}</p>}
             {content.leads.map((lead) => (
               <div key={lead.id} className="border border-gray-200 rounded-xl p-4">

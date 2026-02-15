@@ -213,7 +213,8 @@ const defaultContent: SiteContent = {
 interface SiteContentContextType {
   content: SiteContent;
   setContent: React.Dispatch<React.SetStateAction<SiteContent>>;
-  addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => void;
+  addLead: (lead: Omit<LeadItem, 'id' | 'createdAt'>) => Promise<boolean>;
+  refreshLeads: () => Promise<void>;
   resetContent: () => void;
 }
 
@@ -432,7 +433,15 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const addLead = (lead: Omit<LeadItem, 'id' | 'createdAt'>) => {
+  const refreshLeads = async () => {
+    if (!isSupabaseConfigured || !supabase) return;
+    const remoteLeads = await loadRemoteLeads();
+    if (remoteLeads) {
+      setContent((prev) => ({ ...prev, leads: remoteLeads }));
+    }
+  };
+
+  const addLead = async (lead: Omit<LeadItem, 'id' | 'createdAt'>) => {
     const fallbackLead: LeadItem = {
       ...lead,
       id: typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now()),
@@ -445,9 +454,9 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     }));
 
     if (isSupabaseConfigured) {
-      saveLeadRemote(lead)
-        .then((remoteResult) => {
-          if (!remoteResult) return;
+      try {
+        const remoteResult = await saveLeadRemote(lead);
+        if (remoteResult) {
           setContent((prev) => ({
             ...prev,
             leads: prev.leads.map((item) =>
@@ -456,11 +465,14 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
                 : item,
             ),
           }));
-        })
-        .catch((error) => {
-          console.error('Supabase lead insert failed, lead kept locally.', error);
-        });
+          return true;
+        }
+      } catch (error) {
+        console.error('Supabase lead insert failed, lead kept locally.', error);
+        return false;
+      }
     }
+    return true;
   };
 
   const resetContent = () => {
@@ -472,6 +484,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
       content,
       setContent,
       addLead,
+      refreshLeads,
       resetContent,
     }),
     [content],

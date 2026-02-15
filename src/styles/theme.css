@@ -736,3 +736,37 @@ html[lang='he'] .hero-line-2 {
     transform: none;
   }
 }
+
+.admin-shell {
+  background:
+    radial-gradient(circle at 15% 10%, #fff5cf 0%, transparent 34%),
+    radial-gradient(circle at 85% 14%, #f9ddff 0%, transparent 38%),
+    linear-gradient(180deg, #f3f3f3 0%, #ececec 100%);
+}
+
+.admin-shell .bg-gray-100,
+.admin-shell .bg-gray-50 {
+  background: transparent !important;
+}
+
+.admin-shell .bg-white {
+  background-color: rgba(255, 255, 255, 0.82) !important;
+  backdrop-filter: blur(8px);
+}
+
+.admin-shell .bg-blue-600,
+.admin-shell .bg-blue-700,
+.admin-shell .hover\:bg-blue-700:hover {
+  background-color: #7f46ff !important;
+}
+
+.admin-shell .text-blue-600,
+.admin-shell .hover\:text-blue-600:hover {
+  color: #7f46ff !important;
+}
+
+.admin-shell .border-blue-600,
+.admin-shell .focus\:border-blue-600:focus,
+.admin-shell .hover\:border-blue-600:hover {
+  border-color: #7f46ff !important;
+}

@@ -29,14 +29,23 @@ export function Contact() {
   const { addLead, content } = useSiteContent();
   const [formData, setFormData] = useState<ContactFormState>(initialForm);
   const [sent, setSent] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   const onChange = (key: keyof ContactFormState, value: string) => {
     setFormData((prev) => ({ ...prev, [key]: value }));
   };
 
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    addLead(formData);
+    setSubmitError('');
+    const success = await addLead(formData);
+    if (!success) {
+      setSubmitError(
+        isRTL
+          ? 'הליד נשמר מקומית בלבד. בדוק הרשאות Supabase לטבלת leads.'
+          : 'Lead saved locally only. Check Supabase permissions for leads table.',
+      );
+    }
     setFormData(initialForm);
     setSent(true);
     window.setTimeout(() => setSent(false), 3000);
@@ -195,6 +204,7 @@ export function Contact() {
                       ? 'נחזור אליך תוך 24 שעות עם הצעה מותאמת אישית'
                       : "We'll respond within 24 hours with a custom proposal"}
                 </p>
+                {submitError && <p className="text-center text-red-600 mt-2 text-sm">{submitError}</p>}
               </form>
             </div>
 
