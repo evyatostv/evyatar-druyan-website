@@ -84,6 +84,7 @@ const REMOTE_TABLE = 'site_content';
 const REMOTE_ROW_ID = 'main';
 const REMOTE_SAVE_DEBOUNCE_MS = 800;
 const LEADS_TABLE = 'leads';
+const IS_DEV = import.meta.env.DEV;
 
 const defaultContent: SiteContent = {
   projects: [
@@ -263,6 +264,15 @@ function isAbortError(error: unknown) {
     if (haystack.includes('signal is aborted')) return true;
   }
   return false;
+}
+
+function debugLog(message: string, error?: unknown) {
+  if (!IS_DEV) return;
+  if (error) {
+    console.error(message, error);
+    return;
+  }
+  console.error(message);
 }
 
 async function loadRemoteContent(): Promise<SiteContent | null> {
@@ -464,7 +474,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           }
         } catch (error) {
           if (!isAbortError(error)) {
-            console.error('Supabase load failed, fallback to local cache.', error);
+            debugLog('Supabase load failed, fallback to local cache.', error);
           }
         }
       }
@@ -493,7 +503,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     remoteSaveTimerRef.current = window.setTimeout(() => {
       saveRemoteContent(normalizeContent(content)).catch((error) => {
         if (!isAbortError(error)) {
-          console.error('Supabase save failed, changes remain local.', error);
+          debugLog('Supabase save failed, changes remain local.', error);
         }
       });
     }, REMOTE_SAVE_DEBOUNCE_MS);
@@ -550,7 +560,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
         return true;
       } catch (error) {
         if (!isAbortError(error)) {
-          console.error('Supabase lead insert failed, lead kept locally.', error);
+          debugLog('Supabase lead insert failed, lead kept locally.', error);
         }
         return false;
       }

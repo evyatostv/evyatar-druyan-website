@@ -42,8 +42,8 @@ export function Contact() {
     if (!success) {
       setSubmitError(
         isRTL
-          ? 'הליד נשמר מקומית בלבד. בדוק הרשאות Supabase לטבלת leads.'
-          : 'Lead saved locally only. Check Supabase permissions for leads table.',
+          ? 'השליחה נקלטה זמנית. אם צריך, ניצור איתך קשר ידנית.'
+          : 'Submission was received temporarily. We will contact you manually if needed.',
       );
     }
     setFormData(initialForm);

@@ -7,6 +7,7 @@ const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
 const PBKDF2_ITERATIONS = 210000;
 const SESSION_MAX_AGE_MS = 1000 * 60 * 60 * 24 * 30;
+const IS_DEV = import.meta.env.DEV;
 
 interface AdminAuthRecord {
   salt: string;
@@ -87,6 +88,9 @@ function safeCompare(a: string, b: string) {
 }
 
 function toLeadErrorMessage(error: unknown, isRTL: boolean) {
+  if (!IS_DEV) {
+    return isRTL ? 'לא ניתן לטעון לידים כרגע' : 'Unable to load leads right now';
+  }
   const raw =
     error instanceof Error
       ? error.message
@@ -185,7 +189,9 @@ export function Admin() {
         })
         .catch((error) => {
           // Never keep /admin blank if session bootstrap fails.
-          console.warn('Supabase session bootstrap failed. Falling back to logged-out state.', error);
+          if (IS_DEV) {
+            console.warn('Supabase session bootstrap failed. Falling back to logged-out state.', error);
+          }
           if (!mounted) return;
           setIsAuthenticated(false);
           setAuthReady(true);
@@ -409,7 +415,7 @@ export function Admin() {
     if (!isAuthenticated || !isSupabaseConfigured) return;
     refreshLeads().catch((error) => {
       setLeadsError(toLeadErrorMessage(error, isRTL));
-      console.error(error);
+      if (IS_DEV) console.error(error);
     });
   }, [isAuthenticated, isSupabaseConfigured, refreshLeads, isRTL]);
 
