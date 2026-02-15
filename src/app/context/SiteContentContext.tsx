@@ -297,14 +297,40 @@ async function saveRemoteContent(content: SiteContent) {
 
 async function loadRemoteLeads(): Promise<LeadItem[] | null> {
   if (!supabase) return null;
-  const { data, error } = await supabase
-    .from(LEADS_TABLE)
-    .select('id,full_name,phone,email,company,budget,project_type,details,created_at')
-    .order('created_at', { ascending: false });
+  const selectVariants = [
+    'id,full_name,phone,email,company,budget,project_type,details,created_at',
+    'id,full_name,phone,email,company,website,message,status,source,created_at',
+    'id,full_name,phone,email,company,created_at',
+  ];
 
-  if (error) {
-    throw error;
+  let lastError: unknown = null;
+  let data:
+    | Array<{
+        id: string;
+        full_name?: string | null;
+        phone?: string | null;
+        email?: string | null;
+        company?: string | null;
+        budget?: string | null;
+        project_type?: string | null;
+        details?: string | null;
+        website?: string | null;
+        message?: string | null;
+        created_at?: string | null;
+      }>
+    | null = null;
+
+  for (const selectClause of selectVariants) {
+    const result = await supabase.from(LEADS_TABLE).select(selectClause).order('created_at', { ascending: false });
+    if (!result.error) {
+      data = (result.data || []) as typeof data;
+      lastError = null;
+      break;
+    }
+    lastError = result.error;
   }
+
+  if (lastError) throw lastError;
 
   return (data || []).map((row) => ({
     id: row.id,
@@ -314,14 +340,14 @@ async function loadRemoteLeads(): Promise<LeadItem[] | null> {
     company: row.company || '',
     budget: row.budget || '',
     projectType: row.project_type || '',
-    details: row.details || '',
+    details: row.details || row.message || '',
     createdAt: row.created_at || new Date().toISOString(),
   }));
 }
 
 async function saveLeadRemote(lead: Omit<LeadItem, 'id' | 'createdAt'>) {
   if (!supabase) return null;
-  const payload = {
+  const payloadV2 = {
     full_name: lead.fullName,
     phone: lead.phone,
     email: lead.email,
@@ -330,15 +356,34 @@ async function saveLeadRemote(lead: Omit<LeadItem, 'id' | 'createdAt'>) {
     project_type: lead.projectType,
     details: lead.details,
   };
+  const payloadLegacy = {
+    full_name: lead.fullName,
+    phone: lead.phone,
+    email: lead.email,
+    company: lead.company,
+    website: '',
+    message: lead.details,
+    status: 'new',
+    source: 'website',
+  };
+  const payloadMinimal = {
+    full_name: lead.fullName,
+    phone: lead.phone,
+    email: lead.email,
+    company: lead.company,
+  };
 
-  const { error } = await supabase
-    .from(LEADS_TABLE)
-    .insert(payload);
-
-  if (error) {
-    throw error;
+  const variants = [payloadV2, payloadLegacy, payloadMinimal];
+  let lastError: unknown = null;
+  for (const payload of variants) {
+    const { error } = await supabase.from(LEADS_TABLE).insert(payload);
+    if (!error) {
+      return { ok: true };
+    }
+    lastError = error;
   }
-  return { ok: true };
+
+  throw lastError;
 }
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {

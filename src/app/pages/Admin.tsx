@@ -155,11 +155,20 @@ export function Admin() {
   useEffect(() => {
     let mounted = true;
     if (isSupabaseConfigured && supabase) {
-      supabase.auth.getSession().then(({ data }) => {
-        if (!mounted) return;
-        setIsAuthenticated(Boolean(data.session?.user));
-        setAuthReady(true);
-      });
+      supabase.auth
+        .getSession()
+        .then(({ data }) => {
+          if (!mounted) return;
+          setIsAuthenticated(Boolean(data.session?.user));
+          setAuthReady(true);
+        })
+        .catch((error) => {
+          // Never keep /admin blank if session bootstrap fails.
+          console.warn('Supabase session bootstrap failed. Falling back to logged-out state.', error);
+          if (!mounted) return;
+          setIsAuthenticated(false);
+          setAuthReady(true);
+        });
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange((_event, session) => {
