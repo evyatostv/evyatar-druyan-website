@@ -331,20 +331,14 @@ async function saveLeadRemote(lead: Omit<LeadItem, 'id' | 'createdAt'>) {
     details: lead.details,
   };
 
-  const { data, error } = await supabase
+  const { error } = await supabase
     .from(LEADS_TABLE)
-    .insert(payload)
-    .select('id, created_at')
-    .single();
+    .insert(payload);
 
   if (error) {
     throw error;
   }
-
-  return {
-    id: data.id as string,
-    createdAt: data.created_at as string,
-  };
+  return { ok: true };
 }
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {
@@ -455,18 +449,8 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
 
     if (isSupabaseConfigured) {
       try {
-        const remoteResult = await saveLeadRemote(lead);
-        if (remoteResult) {
-          setContent((prev) => ({
-            ...prev,
-            leads: prev.leads.map((item) =>
-              item.id === fallbackLead.id
-                ? { ...item, id: remoteResult.id, createdAt: remoteResult.createdAt }
-                : item,
-            ),
-          }));
-          return true;
-        }
+        await saveLeadRemote(lead);
+        return true;
       } catch (error) {
         console.error('Supabase lead insert failed, lead kept locally.', error);
         return false;
