@@ -87,6 +87,15 @@ function safeCompare(a: string, b: string) {
   return diff === 0;
 }
 
+function toProjectTypeHebrew(value: string) {
+  const normalized = (value || '').trim().toLowerCase();
+  if (normalized === 'website' || normalized.includes('website')) return 'עיצוב אתר';
+  if (normalized === 'ads' || normalized.includes('advert')) return 'פרסום ממומן';
+  if (normalized === 'full' || normalized.includes('package')) return 'חבילה מלאה';
+  if (normalized === 'עיצוב אתר' || normalized === 'פרסום ממומן' || normalized === 'חבילה מלאה') return value;
+  return value || '-';
+}
+
 function toLeadErrorMessage(error: unknown, isRTL: boolean) {
   if (!IS_DEV) return isRTL ? 'לא ניתן לטעון לידים כרגע' : 'Unable to load leads right now';
   const raw =
@@ -395,7 +404,7 @@ export function Admin() {
       .replaceAll('{{name}}', lead.fullName || '-')
       .replaceAll('{{phone}}', lead.phone || '-')
       .replaceAll('{{company}}', lead.company || '-')
-      .replaceAll('{{projectType}}', lead.projectType || '-')
+      .replaceAll('{{projectType}}', toProjectTypeHebrew(lead.projectType))
       .replaceAll('{{budget}}', lead.budget || '-');
   };
 
