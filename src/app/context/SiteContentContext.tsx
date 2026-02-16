@@ -201,7 +201,7 @@ const defaultContent: SiteContent = {
   siteInfo: {
     brandHe: 'דרוין עיצובים',
     brandEn: 'Druyan Design',
-    email: 'hello@yoursite.com',
+    email: 'contact@drd.co.il',
     phone: '+972-50-123-4567',
     locationHe: 'תל אביב, ישראל',
     locationEn: 'Tel Aviv, Israel',
@@ -244,8 +244,17 @@ function parseStoredContent(value: string | null): SiteContent | null {
 }
 
 function normalizeContent(content: SiteContent): SiteContent {
+  const normalizedEmail =
+    !content.siteInfo?.email || content.siteInfo.email === 'hello@yoursite.com'
+      ? 'contact@drd.co.il'
+      : content.siteInfo.email;
+
   return {
     ...content,
+    siteInfo: {
+      ...content.siteInfo,
+      email: normalizedEmail,
+    },
     leads: (content.leads || []).map((lead) => ({
       ...lead,
       phone: lead.phone || '',

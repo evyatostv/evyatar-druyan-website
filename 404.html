@@ -5,8 +5,8 @@
     <title>Druyan Design</title>
     <script>
       // GitHub Pages SPA redirect
-      var segmentCount = l.pathname.indexOf('/evyatar-druyan-website/') === 0 ? 1 : 0;
       var l = window.location;
+      var segmentCount = l.pathname.indexOf('/evyatar-druyan-website/') === 0 ? 1 : 0;
       var repoBase = l.pathname.split('/').slice(0, 1 + segmentCount).join('/');
       var route = l.pathname.slice(1).split('/').slice(segmentCount).join('/');
       var search = l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '';
