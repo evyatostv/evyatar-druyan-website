@@ -476,7 +476,7 @@ export function Admin() {
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'כניסת אדמין' : 'Admin Login'}</h1>
           <p className="text-gray-600 mb-6">
             {isSupabaseConfigured
-              ? (isRTL ? 'התחבר עם משתמש האדמין של Supabase' : 'Sign in with your Supabase admin user')
+              ? (isRTL ? 'התחבר עם משתמש האדמין שלך' : 'Sign in with your admin account')
               : (isRTL ? 'הכנס סיסמה כדי לנהל את האתר' : 'Enter password to manage the website')}
           </p>
           <div className="space-y-3">
@@ -562,7 +562,7 @@ export function Admin() {
               <p className="text-gray-500 text-sm">{isRTL ? 'סטטוס דאטה' : 'Data Status'}</p>
               <p className="text-lg font-semibold">
                 {isSupabaseConfigured
-                  ? (isRTL ? 'מחובר ל-Supabase' : 'Connected to Supabase')
+                  ? (isRTL ? 'סנכרון ענן פעיל' : 'Cloud sync enabled')
                   : (isRTL ? 'עובד לוקאלית (localStorage)' : 'Running locally (localStorage)')}
               </p>
             </div>
