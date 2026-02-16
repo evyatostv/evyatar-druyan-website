@@ -37,6 +37,10 @@ export function Root() {
   }, []);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname, location.search]);
+
+  useEffect(() => {
     const sections = Array.from(document.querySelectorAll('main section'));
 
     sections.forEach((section, index) => {
@@ -66,7 +70,9 @@ export function Root() {
       <BrandAtmosphere />
       <Navigation />
       <main className="relative z-10">
-        <Outlet />
+        <div key={`${location.pathname}${location.search}`} className="route-enter">
+          <Outlet />
+        </div>
       </main>
       <Footer />
     </div>

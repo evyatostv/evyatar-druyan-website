@@ -231,6 +231,48 @@
   }
 }
 
+@keyframes routeEnter {
+  0% {
+    opacity: 0;
+    transform: translateY(26px) scale(0.995);
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes routeGlow {
+  0% {
+    opacity: 0.35;
+    transform: translateY(-18px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}
+
+.route-enter {
+  position: relative;
+  animation: routeEnter 520ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.route-enter::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 120px;
+  pointer-events: none;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--logo-purple, #7c4ff2) 18%, transparent), transparent);
+  filter: blur(12px);
+  animation: routeGlow 620ms ease-out;
+}
+
 @keyframes ticker {
   0% {
     transform: translateX(0);
