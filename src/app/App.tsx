@@ -6,7 +6,12 @@ import { router } from './routes';
 import { Admin } from './pages/Admin';
 
 export default function App() {
-  const isNativeApp = Capacitor.isNativePlatform();
+  const isNativeApp =
+    Capacitor.isNativePlatform() ||
+    (typeof window !== 'undefined' &&
+      (Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) ||
+        Boolean((window as { webkit?: { messageHandlers?: { bridge?: unknown } } }).webkit?.messageHandlers?.bridge) ||
+        ['capacitor:', 'ionic:', 'file:'].includes(window.location.protocol)));
 
   return (
     <LanguageProvider>

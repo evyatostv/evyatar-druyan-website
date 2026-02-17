@@ -19,9 +19,16 @@ console.warn(
   'font-size:18px;font-weight:800;color:#b00020;',
 );
 
-if (Capacitor.isNativePlatform()) {
+const isNativeApp =
+  Capacitor.isNativePlatform() ||
+  (typeof window !== 'undefined' &&
+    (Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) ||
+      Boolean((window as { webkit?: { messageHandlers?: { bridge?: unknown } } }).webkit?.messageHandlers?.bridge) ||
+      ['capacitor:', 'ionic:', 'file:'].includes(window.location.protocol)));
+
+if (isNativeApp) {
   const normalizedPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
-  if (normalizedPath === '/') {
+  if (normalizedPath === '/' || normalizedPath.startsWith('/home')) {
     window.history.replaceState(null, '', '/admin');
   }
 }
