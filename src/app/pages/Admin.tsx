@@ -180,6 +180,7 @@ export function Admin() {
   const [showNewPassword2, setShowNewPassword2] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'content' | 'settings'>('dashboard');
   const safeAreaStyle = { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)' };
+  const headerSafeAreaStyle = { paddingTop: 'max(env(safe-area-inset-top, 0px), 14px)' };
 
   const [newProject, setNewProject] = useState<ProjectItem>({
     id: '',
@@ -652,7 +653,7 @@ export function Admin() {
 
   return (
     <div className="admin-shell min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'} onKeyDown={onAdminHotkeys} style={safeAreaStyle}>
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-40" style={headerSafeAreaStyle}>
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">{isRTL ? 'לוח ניהול' : 'Admin Dashboard'}</h1>
