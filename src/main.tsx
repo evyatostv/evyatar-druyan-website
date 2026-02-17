@@ -2,6 +2,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Capacitor } from '@capacitor/core';
 import App from './app/App';
+import { Admin } from './app/pages/Admin';
+import { LanguageProvider } from './app/context/LanguageContext';
+import { SiteContentProvider } from './app/context/SiteContentContext';
 import './styles/index.css';
 
 console.warn(
@@ -28,13 +31,21 @@ const isNativeApp =
 
 if (isNativeApp) {
   const normalizedPath = window.location.pathname.replace(/\/index\.html$/, '/') || '/';
-  if (normalizedPath === '/' || normalizedPath.startsWith('/home')) {
+  if (normalizedPath !== '/admin') {
     window.history.replaceState(null, '', '/admin');
   }
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <App />
+    {isNativeApp ? (
+      <LanguageProvider>
+        <SiteContentProvider>
+          <Admin />
+        </SiteContentProvider>
+      </LanguageProvider>
+    ) : (
+      <App />
+    )}
   </StrictMode>,
 );
