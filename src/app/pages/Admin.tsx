@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import { useSiteContent, HomeSectionId, LeadItem, ProjectItem, ArticleItem, FAQItem } from '../context/SiteContentContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
-import { getStoredAdminPushToken, isNativeAdminApp, registerAdminPushToken, requireAdminBiometric } from '../../lib/nativeAdmin';
+import { getStoredAdminPushToken, isNativeAdminApp, notifyLeadReceived, registerAdminPushToken, requireAdminBiometric } from '../../lib/nativeAdmin';
 
 const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
@@ -181,6 +181,7 @@ export function Admin() {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'content' | 'settings'>('dashboard');
   const safeAreaStyle = { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)' };
   const headerSafeAreaStyle = { paddingTop: 'max(env(safe-area-inset-top, 0px), 14px)' };
+  const seenLeadIdRef = useRef<string | null>(null);
 
   const [newProject, setNewProject] = useState<ProjectItem>({
     id: '',
@@ -480,6 +481,16 @@ export function Admin() {
   }, [isAuthenticated, isSupabaseConfigured, refreshLeads, isRTL]);
 
   useEffect(() => {
+    if (!isAuthenticated || !isSupabaseConfigured) return;
+    const intervalId = window.setInterval(() => {
+      refreshLeads().catch((error) => {
+        setLeadsError(toLeadErrorMessage(error, isRTL));
+      });
+    }, 15000);
+    return () => window.clearInterval(intervalId);
+  }, [isAuthenticated, isSupabaseConfigured, refreshLeads, isRTL]);
+
+  useEffect(() => {
     if (!isAuthenticated) {
       setBiometricUnlocked(!isNativeAdminApp());
       setBiometricMessage('');
@@ -521,6 +532,21 @@ export function Admin() {
         setPushBusy(false);
       });
   }, [isAuthenticated, biometricUnlocked, isRTL]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !biometricUnlocked) return;
+    const latest = content.leads[0];
+    if (!latest) return;
+    if (!seenLeadIdRef.current) {
+      seenLeadIdRef.current = latest.id;
+      return;
+    }
+    if (seenLeadIdRef.current === latest.id) return;
+    seenLeadIdRef.current = latest.id;
+    notifyLeadReceived(latest, isRTL).catch(() => {
+      // notification permission or platform issue should not break admin
+    });
+  }, [content.leads, isAuthenticated, biometricUnlocked, isRTL]);
 
   const onAdminHotkeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!event.altKey) return;

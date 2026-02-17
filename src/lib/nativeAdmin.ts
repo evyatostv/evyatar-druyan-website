@@ -1,5 +1,6 @@
 import { BiometricAuth, BiometryError, BiometryErrorType } from '@aparajita/capacitor-biometric-auth';
 import { Capacitor } from '@capacitor/core';
+import { LocalNotifications } from '@capacitor/local-notifications';
 import { PushNotifications } from '@capacitor/push-notifications';
 
 const PUSH_TOKEN_STORAGE_KEY = 'dd-admin-push-token-v1';
@@ -102,4 +103,42 @@ export async function registerAdminPushToken(isRTL: boolean) {
 
   await PushNotifications.register();
   return tokenPromise;
+}
+
+export async function notifyLeadReceived(
+  lead: { fullName?: string; projectType?: string; company?: string },
+  isRTL: boolean,
+) {
+  const title = isRTL ? 'ליד חדש התקבל' : 'New lead received';
+  const body = isRTL
+    ? `${lead.fullName || 'ליד חדש'} · ${lead.projectType || lead.company || ''}`.trim()
+    : `${lead.fullName || 'New lead'} · ${lead.projectType || lead.company || ''}`.trim();
+
+  if (isNativeAdminApp()) {
+    let permission = await LocalNotifications.checkPermissions();
+    if (permission.display === 'prompt') {
+      permission = await LocalNotifications.requestPermissions();
+    }
+    if (permission.display !== 'granted') return;
+
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: Date.now() % 2147483000,
+          title,
+          body,
+        },
+      ],
+    });
+    return;
+  }
+
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+    if (Notification.permission === 'granted') {
+      new Notification(title, { body });
+    }
+  }
 }

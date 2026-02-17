@@ -169,7 +169,7 @@ const defaultContent: SiteContent = {
       dateEn: 'February 10, 2026',
       readTimeHe: '7 דק׳',
       readTimeEn: '7 min',
-      contentHe: 'כדי להוריד עלות רכישה צריך מדידה נקייה, פילוח קהלים מדויק ובדיקות קריאייטיב רציפות. כשמחברים לזה דף נחיתה טוב, הביצועים משתפרים משמעותית.',
+      contentHe: 'כדי להוריד עלות רכישה צריך מדידה נקייה, פילוח קהלים מדוייק ובדיקות קריאייטיב רציפות. כשמחברים לזה דף נחיתה טוב, הביצועים משתפרים משמעותית.',
       contentEn: 'Lower acquisition costs start with accurate tracking and high-quality audiences. Creative testing and landing page optimization reduce costs over time.',
     },
   ],
@@ -202,10 +202,10 @@ const defaultContent: SiteContent = {
     brandHe: 'דרוין עיצובים',
     brandEn: 'Druyan Design',
     email: 'contact@drd.co.il',
-    phone: '+972-50-123-4567',
+    phone: '+972 53 553 2893',
     locationHe: 'תל אביב, ישראל',
     locationEn: 'Tel Aviv, Israel',
-    whatsappNumber: '972501234567',
+    whatsappNumber: '972535532893',
     whatsappTemplate:
       'היי {{name}}, תודה שפנית. ראיתי את הפרטים שלך לגבי {{projectType}}. אשמח לתאם שיחה קצרה.',
   },
@@ -453,6 +453,31 @@ async function saveLeadRemote(lead: Omit<LeadItem, 'id' | 'createdAt'>) {
   throw lastError;
 }
 
+function mapLeadRow(row: {
+  id?: string | null;
+  full_name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  company?: string | null;
+  budget?: string | null;
+  project_type?: string | null;
+  details?: string | null;
+  message?: string | null;
+  created_at?: string | null;
+}): LeadItem {
+  return {
+    id: row.id || (typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : String(Date.now())),
+    fullName: row.full_name || '',
+    phone: row.phone || '',
+    email: row.email || '',
+    company: row.company || '',
+    budget: row.budget || '',
+    projectType: row.project_type || '',
+    details: row.details || row.message || '',
+    createdAt: row.created_at || new Date().toISOString(),
+  };
+}
+
 export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<SiteContent>(defaultContent);
   const [hydrated, setHydrated] = useState(false);
@@ -541,6 +566,44 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!supabase || !isSupabaseConfigured) return;
+    let cancelled = false;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    const connectRealtime = async () => {
+      const sessionData = await supabase.auth.getSession();
+      if (!sessionData.data.session?.user || cancelled) return;
+      channel = supabase
+        .channel('leads-realtime-feed')
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: LEADS_TABLE },
+          (payload) => {
+            const lead = mapLeadRow((payload.new || {}) as Record<string, string>);
+            setContent((prev) => {
+              if (prev.leads.some((item) => item.id === lead.id)) {
+                return prev;
+              }
+              return { ...prev, leads: [lead, ...prev.leads] };
+            });
+          },
+        )
+        .subscribe();
+    };
+
+    connectRealtime().catch(() => {
+      // realtime may be disabled; keep app functional with manual/poll refresh
+    });
+
+    return () => {
+      cancelled = true;
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   const refreshLeads = async () => {
