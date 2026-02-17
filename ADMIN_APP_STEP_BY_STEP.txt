@@ -1,0 +1,45 @@
+Druyan Admin iPhone App - Step by Step
+
+1) What was implemented in code
+- Capacitor iOS app wrapper was added.
+- Native biometric lock (Face ID / Touch ID) was added for /admin.
+- Native push registration was added and token is shown in admin settings.
+- App startup on native now opens directly to /admin.
+- iOS AppDelegate push callbacks were added.
+- iOS Info.plist includes Face ID usage description.
+
+2) Project files added/updated
+- capacitor.config.ts
+- src/lib/nativeAdmin.ts
+- src/app/pages/Admin.tsx
+- src/main.tsx
+- ios/App/App/AppDelegate.swift
+- ios/App/App/Info.plist
+- package.json scripts
+
+3) Commands to run after every web change
+1. npm run mobile:build
+2. npm run mobile:ios
+
+4) First-time iPhone run
+1. Open Xcode via: npm run mobile:ios
+2. In Xcode: select signing team for target "App"
+3. Enable capability: Push Notifications
+4. Build and run on real iPhone (not simulator for push token)
+
+5) What happens in the app
+- App opens to /admin automatically on native.
+- After login, biometric unlock prompt appears.
+- In Settings tab, you can refresh/copy push token.
+
+6) Push setup notes
+- APNs key/cert must be configured in your notification provider backend.
+- This app generates token and asks permissions. Sending notifications requires backend/provider integration.
+
+7) Troubleshooting
+- If plugins changed: npm run mobile:sync
+- If iOS build fails: in ios/App run "pod install" only if your setup uses CocoaPods.
+- If old JS shows: clean build in Xcode + rerun npm run mobile:build
+
+Prepared for: Druyan Design
+Date: 2026-02-17

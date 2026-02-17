@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSiteContent, HomeSectionId, LeadItem, ProjectItem, ArticleItem, FAQItem } from '../context/SiteContentContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
+import { getStoredAdminPushToken, isNativeAdminApp, registerAdminPushToken, requireAdminBiometric } from '../../lib/nativeAdmin';
 
 const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
@@ -126,6 +127,10 @@ export function Admin() {
   const [authError, setAuthError] = useState('');
   const [settingsMessage, setSettingsMessage] = useState('');
   const [leadsError, setLeadsError] = useState('');
+  const [biometricUnlocked, setBiometricUnlocked] = useState(!isNativeAdminApp());
+  const [biometricMessage, setBiometricMessage] = useState('');
+  const [pushToken, setPushToken] = useState(getStoredAdminPushToken());
+  const [pushBusy, setPushBusy] = useState(false);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPassword2, setNewPassword2] = useState('');
@@ -395,6 +400,8 @@ export function Admin() {
     }
     localStorage.removeItem(SESSION_STORAGE_KEY);
     setIsAuthenticated(false);
+    setBiometricUnlocked(!isNativeAdminApp());
+    setBiometricMessage('');
     setLoginEmail('');
     setLoginPassword('');
   };
@@ -425,6 +432,49 @@ export function Admin() {
       if (IS_DEV) console.error(error);
     });
   }, [isAuthenticated, isSupabaseConfigured, refreshLeads, isRTL]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setBiometricUnlocked(!isNativeAdminApp());
+      setBiometricMessage('');
+      return;
+    }
+    if (!isNativeAdminApp()) {
+      setBiometricUnlocked(true);
+      return;
+    }
+
+    setBiometricUnlocked(false);
+    setBiometricMessage('');
+    requireAdminBiometric(isRTL)
+      .then(() => {
+        setBiometricUnlocked(true);
+      })
+      .catch((error) => {
+        setBiometricMessage(
+          error instanceof Error
+            ? error.message
+            : isRTL
+              ? 'האימות הביומטרי נכשל.'
+              : 'Biometric authentication failed.',
+        );
+      });
+  }, [isAuthenticated, isRTL]);
+
+  useEffect(() => {
+    if (!isAuthenticated || !biometricUnlocked || !isNativeAdminApp()) return;
+    setPushBusy(true);
+    registerAdminPushToken(isRTL)
+      .then((token) => {
+        if (token) setPushToken(token);
+      })
+      .catch(() => {
+        setPushToken(getStoredAdminPushToken());
+      })
+      .finally(() => {
+        setPushBusy(false);
+      });
+  }, [isAuthenticated, biometricUnlocked, isRTL]);
 
   const onAdminHotkeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!event.altKey) return;
@@ -512,6 +562,44 @@ export function Admin() {
               {isRTL ? 'התחבר' : 'Login'}
             </button>
           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (isNativeAdminApp() && !biometricUnlocked) {
+    return (
+      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+        <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg space-y-4">
+          <h1 className="text-2xl font-bold text-gray-900">{isRTL ? 'נעילה ביומטרית' : 'Biometric Lock'}</h1>
+          <p className="text-gray-600">
+            {isRTL ? 'לפני כניסה לדשבורד נדרש אימות Face ID / Touch ID.' : 'Face ID / Touch ID is required before opening the dashboard.'}
+          </p>
+          {biometricMessage && <p className="text-sm text-red-600">{biometricMessage}</p>}
+          <button
+            onClick={() =>
+              requireAdminBiometric(isRTL)
+                .then(() => {
+                  setBiometricMessage('');
+                  setBiometricUnlocked(true);
+                })
+                .catch((error) => {
+                  setBiometricMessage(
+                    error instanceof Error
+                      ? error.message
+                      : isRTL
+                        ? 'האימות הביומטרי נכשל.'
+                        : 'Biometric authentication failed.',
+                  );
+                })
+            }
+            className="w-full bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-blue-700 transition-colors"
+          >
+            {isRTL ? 'נסו שוב' : 'Try Again'}
+          </button>
+          <button onClick={logout} className="w-full border border-gray-300 rounded-xl px-4 py-3 font-semibold">
+            {isRTL ? 'יציאה' : 'Exit'}
+          </button>
         </div>
       </div>
     );
@@ -852,6 +940,45 @@ export function Admin() {
               </button>
               {settingsMessage && <p className="text-sm text-gray-700">{settingsMessage}</p>}
             </section>
+
+            {isNativeAdminApp() && (
+              <section className="bg-white border rounded-2xl p-5 space-y-3">
+                <h2 className="text-xl font-bold">{isRTL ? 'אפליקציית אייפון - Push' : 'iPhone App - Push'}</h2>
+                <p className="text-sm text-gray-600">
+                  {isRTL ? 'טוקן ההתראות של המכשיר שלך:' : 'Your device push token:'}
+                </p>
+                <div className="border rounded-lg px-3 py-2 text-xs break-all bg-gray-50">{pushToken || (isRTL ? 'עדיין לא נוצר טוקן' : 'Token not created yet')}</div>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    onClick={() => {
+                      setPushBusy(true);
+                      registerAdminPushToken(isRTL)
+                        .then((token) => {
+                          setPushToken(token);
+                          setSettingsMessage(isRTL ? 'טוקן Push עודכן' : 'Push token updated');
+                        })
+                        .catch((error) => {
+                          setSettingsMessage(error instanceof Error ? error.message : isRTL ? 'שגיאה בעדכון Push' : 'Push update failed');
+                        })
+                        .finally(() => {
+                          setPushBusy(false);
+                        });
+                    }}
+                    className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold disabled:opacity-60"
+                    disabled={pushBusy}
+                  >
+                    {pushBusy ? (isRTL ? 'מעדכן...' : 'Updating...') : isRTL ? 'רענן Push' : 'Refresh Push'}
+                  </button>
+                  <button
+                    onClick={() => copyText(pushToken)}
+                    className="px-4 py-2 rounded-lg border border-gray-300 font-semibold disabled:opacity-50"
+                    disabled={!pushToken}
+                  >
+                    {isRTL ? 'העתק טוקן' : 'Copy Token'}
+                  </button>
+                </div>
+              </section>
+            )}
           </div>
         )}
       </main>
