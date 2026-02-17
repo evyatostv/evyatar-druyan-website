@@ -5,6 +5,20 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   base: '/',
+  build: {
+    rollupOptions: {
+      output: {
+        entryFileNames: 'assets/app.js',
+        chunkFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'assets/app.css';
+          }
+          return 'assets/[name]-[hash][extname]';
+        },
+      },
+    },
+  },
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
     // Tailwind is not being actively used – do not remove them

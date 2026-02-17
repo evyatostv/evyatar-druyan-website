@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "mobile:sync": "npx cap sync ios",
-    "mobile:build": "npm run build && npx cap sync ios",
+    "mobile:build": "VITE_NATIVE_APP=true npm run build && npx cap sync ios",
     "mobile:ios": "npm run mobile:build && npx cap open ios"
   },
   "dependencies": {

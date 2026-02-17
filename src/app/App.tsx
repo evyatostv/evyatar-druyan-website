@@ -6,7 +6,9 @@ import { router } from './routes';
 import { Admin } from './pages/Admin';
 
 export default function App() {
+  const forceNativeAdmin = import.meta.env.VITE_NATIVE_APP === 'true';
   const isNativeApp =
+    forceNativeAdmin ||
     Capacitor.isNativePlatform() ||
     (typeof window !== 'undefined' &&
       (Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) ||

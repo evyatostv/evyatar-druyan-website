@@ -22,7 +22,9 @@ console.warn(
   'font-size:18px;font-weight:800;color:#b00020;',
 );
 
+const forceNativeAdmin = import.meta.env.VITE_NATIVE_APP === 'true';
 const isNativeApp =
+  forceNativeAdmin ||
   Capacitor.isNativePlatform() ||
   (typeof window !== 'undefined' &&
     (Boolean((window as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()) ||

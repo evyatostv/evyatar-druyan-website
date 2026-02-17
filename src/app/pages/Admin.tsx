@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { useSiteContent, HomeSectionId, LeadItem, ProjectItem, ArticleItem, FAQItem } from '../context/SiteContentContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
@@ -113,6 +114,43 @@ function toLeadErrorMessage(error: unknown, isRTL: boolean) {
   return isRTL ? 'לא ניתן לטעון לידים כרגע' : 'Unable to load leads right now';
 }
 
+function PasswordField({
+  value,
+  onChange,
+  placeholder,
+  visible,
+  onToggle,
+  onKeyDown,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder: string;
+  visible: boolean;
+  onToggle: () => void;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+}) {
+  return (
+    <div className="relative">
+      <input
+        type={visible ? 'text' : 'password'}
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onKeyDown={onKeyDown}
+        className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12"
+      />
+      <button
+        type="button"
+        onClick={onToggle}
+        className="absolute inset-y-0 right-2 my-auto h-8 w-8 rounded-md flex items-center justify-center text-gray-500 hover:bg-gray-100"
+        aria-label={visible ? 'Hide password' : 'Show password'}
+      >
+        {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+      </button>
+    </div>
+  );
+}
+
 export function Admin() {
   const { content, setContent, refreshLeads, resetContent } = useSiteContent();
   const { language, setLanguage } = useLanguage();
@@ -134,7 +172,14 @@ export function Admin() {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPassword2, setNewPassword2] = useState('');
+  const [showSetupPassword, setShowSetupPassword] = useState(false);
+  const [showSetupPassword2, setShowSetupPassword2] = useState(false);
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showNewPassword2, setShowNewPassword2] = useState(false);
   const [activeTab, setActiveTab] = useState<'dashboard' | 'leads' | 'content' | 'settings'>('dashboard');
+  const safeAreaStyle = { paddingTop: 'calc(env(safe-area-inset-top, 0px) + 8px)' };
 
   const [newProject, setNewProject] = useState<ProjectItem>({
     id: '',
@@ -495,28 +540,28 @@ export function Admin() {
 
   if (!isSupabaseConfigured && !authRecord && !isAuthenticated) {
     return (
-      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'} style={safeAreaStyle}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'הגדרת אדמין ראשונה' : 'First Admin Setup'}</h1>
           <p className="text-gray-600 mb-6">
             {isRTL ? 'בחר סיסמה. היא תישמר כ-Hash מוצפן (PBKDF2 + Salt) בדפדפן.' : 'Choose a password. It is stored as a hashed value (PBKDF2 + Salt) in the browser.'}
           </p>
           <div className="space-y-3">
-            <input
-              type="password"
-              placeholder={isRTL ? 'סיסמה חדשה' : 'New password'}
+            <PasswordField
               value={setupPassword}
-              onChange={(e) => setSetupPassword(e.target.value)}
+              onChange={setSetupPassword}
+              placeholder={isRTL ? 'סיסמה חדשה' : 'New password'}
+              visible={showSetupPassword}
+              onToggle={() => setShowSetupPassword((prev) => !prev)}
               onKeyDown={onAuthKeyDown}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
-            <input
-              type="password"
-              placeholder={isRTL ? 'אימות סיסמה' : 'Confirm password'}
+            <PasswordField
               value={setupPassword2}
-              onChange={(e) => setSetupPassword2(e.target.value)}
+              onChange={setSetupPassword2}
+              placeholder={isRTL ? 'אימות סיסמה' : 'Confirm password'}
+              visible={showSetupPassword2}
+              onToggle={() => setShowSetupPassword2((prev) => !prev)}
               onKeyDown={onAuthKeyDown}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
             {authError && <p className="text-red-600 text-sm">{authError}</p>}
             <button onClick={createPassword} className="w-full bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-blue-700 transition-colors">
@@ -530,7 +575,7 @@ export function Admin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'} style={safeAreaStyle}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg">
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{isRTL ? 'כניסת אדמין' : 'Admin Login'}</h1>
           <p className="text-gray-600 mb-6">
@@ -549,13 +594,13 @@ export function Admin() {
                 className="w-full border border-gray-300 rounded-xl px-4 py-3"
               />
             )}
-            <input
-              type="password"
-              placeholder={isRTL ? 'סיסמה' : 'Password'}
+            <PasswordField
               value={loginPassword}
-              onChange={(e) => setLoginPassword(e.target.value)}
+              onChange={setLoginPassword}
+              placeholder={isRTL ? 'סיסמה' : 'Password'}
+              visible={showLoginPassword}
+              onToggle={() => setShowLoginPassword((prev) => !prev)}
               onKeyDown={onAuthKeyDown}
-              className="w-full border border-gray-300 rounded-xl px-4 py-3"
             />
             {authError && <p className="text-red-600 text-sm">{authError}</p>}
             <button onClick={login} className="w-full bg-blue-600 text-white rounded-xl px-4 py-3 font-semibold hover:bg-blue-700 transition-colors">
@@ -569,7 +614,7 @@ export function Admin() {
 
   if (isNativeAdminApp() && !biometricUnlocked) {
     return (
-      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'}>
+      <div className="admin-shell min-h-screen bg-gray-100 flex items-center justify-center px-4" dir={isRTL ? 'rtl' : 'ltr'} style={safeAreaStyle}>
         <div className="w-full max-w-md bg-white border border-gray-200 rounded-2xl p-8 shadow-lg space-y-4">
           <h1 className="text-2xl font-bold text-gray-900">{isRTL ? 'נעילה ביומטרית' : 'Biometric Lock'}</h1>
           <p className="text-gray-600">
@@ -606,7 +651,7 @@ export function Admin() {
   }
 
   return (
-    <div className="admin-shell min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'} onKeyDown={onAdminHotkeys}>
+    <div className="admin-shell min-h-screen bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'} onKeyDown={onAdminHotkeys} style={safeAreaStyle}>
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div>
@@ -912,27 +957,27 @@ export function Admin() {
               <h2 className="text-xl font-bold">{isRTL ? 'שינוי סיסמת אדמין' : 'Change Admin Password'}</h2>
               <div className={`grid gap-2 ${isSupabaseConfigured ? 'md:grid-cols-2' : 'md:grid-cols-3'}`}>
                 {!isSupabaseConfigured && (
-                  <input
-                    type="password"
+                  <PasswordField
                     value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="border rounded-lg px-3 py-2"
+                    onChange={setCurrentPassword}
                     placeholder={isRTL ? 'סיסמה נוכחית' : 'Current password'}
+                    visible={showCurrentPassword}
+                    onToggle={() => setShowCurrentPassword((prev) => !prev)}
                   />
                 )}
-                <input
-                  type="password"
+                <PasswordField
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="border rounded-lg px-3 py-2"
+                  onChange={setNewPassword}
                   placeholder={isRTL ? 'סיסמה חדשה' : 'New password'}
+                  visible={showNewPassword}
+                  onToggle={() => setShowNewPassword((prev) => !prev)}
                 />
-                <input
-                  type="password"
+                <PasswordField
                   value={newPassword2}
-                  onChange={(e) => setNewPassword2(e.target.value)}
-                  className="border rounded-lg px-3 py-2"
+                  onChange={setNewPassword2}
                   placeholder={isRTL ? 'אימות סיסמה חדשה' : 'Confirm new password'}
+                  visible={showNewPassword2}
+                  onToggle={() => setShowNewPassword2((prev) => !prev)}
                 />
               </div>
               <button onClick={changePassword} className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold">
