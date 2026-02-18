@@ -13,6 +13,25 @@ export function getStoredAdminPushToken() {
   return localStorage.getItem(PUSH_TOKEN_STORAGE_KEY) || '';
 }
 
+export async function requestAdminLocalNotificationsPermission() {
+  if (isNativeAdminApp()) {
+    let permission = await LocalNotifications.checkPermissions();
+    if (permission.display === 'prompt') {
+      permission = await LocalNotifications.requestPermissions();
+    }
+    return permission.display === 'granted';
+  }
+
+  if (typeof window !== 'undefined' && 'Notification' in window) {
+    if (Notification.permission === 'default') {
+      await Notification.requestPermission();
+    }
+    return Notification.permission === 'granted';
+  }
+
+  return false;
+}
+
 export async function requireAdminBiometric(isRTL: boolean) {
   if (!isNativeAdminApp()) return;
 
@@ -110,35 +129,48 @@ export async function notifyLeadReceived(
   isRTL: boolean,
 ) {
   const title = isRTL ? 'ליד חדש התקבל' : 'New lead received';
-  const body = isRTL
-    ? `${lead.fullName || 'ליד חדש'} · ${lead.projectType || lead.company || ''}`.trim()
-    : `${lead.fullName || 'New lead'} · ${lead.projectType || lead.company || ''}`.trim();
+  const leadName = lead.fullName || (isRTL ? 'ליד חדש' : 'New lead');
+  const detail = lead.projectType || lead.company || '';
+  const body = detail ? `${leadName} · ${detail}` : leadName;
+
+  const isAllowed = await requestAdminLocalNotificationsPermission();
+  if (!isAllowed) {
+    return { delivered: false, reason: isRTL ? 'אין הרשאה להתראות' : 'Notifications permission denied' };
+  }
 
   if (isNativeAdminApp()) {
-    let permission = await LocalNotifications.checkPermissions();
-    if (permission.display === 'prompt') {
-      permission = await LocalNotifications.requestPermissions();
+    try {
+      await LocalNotifications.schedule({
+        notifications: [
+          {
+            id: Date.now() % 2147483000,
+            title,
+            body,
+            schedule: {
+              at: new Date(Date.now() + 250),
+            },
+          },
+        ],
+      });
+      return { delivered: true };
+    } catch (error) {
+      return {
+        delivered: false,
+        reason:
+          error instanceof Error
+            ? error.message
+            : isRTL
+              ? 'נכשלה יצירת התראה מקומית'
+              : 'Failed to schedule local notification',
+      };
     }
-    if (permission.display !== 'granted') return;
-
-    await LocalNotifications.schedule({
-      notifications: [
-        {
-          id: Date.now() % 2147483000,
-          title,
-          body,
-        },
-      ],
-    });
-    return;
   }
 
   if (typeof window !== 'undefined' && 'Notification' in window) {
-    if (Notification.permission === 'default') {
-      await Notification.requestPermission();
-    }
     if (Notification.permission === 'granted') {
       new Notification(title, { body });
+      return { delivered: true };
     }
   }
+  return { delivered: false, reason: isRTL ? 'לא ניתן להציג התראה כרגע' : 'Could not display notification' };
 }

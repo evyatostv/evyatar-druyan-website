@@ -3,7 +3,7 @@ import { Eye, EyeOff } from 'lucide-react';
 import { useSiteContent, HomeSectionId, LeadItem, ProjectItem, ArticleItem, FAQItem } from '../context/SiteContentContext';
 import { useLanguage } from '../context/LanguageContext';
 import { isSupabaseConfigured, supabase } from '../../lib/supabase';
-import { getStoredAdminPushToken, isNativeAdminApp, notifyLeadReceived, registerAdminPushToken, requireAdminBiometric } from '../../lib/nativeAdmin';
+import { getStoredAdminPushToken, isNativeAdminApp, notifyLeadReceived, registerAdminPushToken, requestAdminLocalNotificationsPermission, requireAdminBiometric } from '../../lib/nativeAdmin';
 
 const AUTH_STORAGE_KEY = 'admin-auth-v1';
 const SESSION_STORAGE_KEY = 'admin-session-v1';
@@ -169,6 +169,7 @@ export function Admin() {
   const [biometricMessage, setBiometricMessage] = useState('');
   const [pushToken, setPushToken] = useState(getStoredAdminPushToken());
   const [pushBusy, setPushBusy] = useState(false);
+  const [leadBanner, setLeadBanner] = useState('');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newPassword2, setNewPassword2] = useState('');
@@ -543,9 +544,22 @@ export function Admin() {
     }
     if (seenLeadIdRef.current === latest.id) return;
     seenLeadIdRef.current = latest.id;
-    notifyLeadReceived(latest, isRTL).catch(() => {
-      // notification permission or platform issue should not break admin
-    });
+    setLeadBanner(
+      isRTL
+        ? `ליד חדש: ${latest.fullName || 'ליד חדש'}`
+        : `New lead: ${latest.fullName || 'New lead'}`,
+    );
+    window.setTimeout(() => setLeadBanner(''), 5500);
+
+    notifyLeadReceived(latest, isRTL)
+      .then((result) => {
+        if (!result.delivered) {
+          setSettingsMessage(result.reason || (isRTL ? 'לא ניתן להציג התראה כרגע' : 'Could not show notification'));
+        }
+      })
+      .catch((error) => {
+        setSettingsMessage(error instanceof Error ? error.message : isRTL ? 'התראת ליד נכשלה' : 'Lead notification failed');
+      });
   }, [content.leads, isAuthenticated, biometricUnlocked, isRTL]);
 
   const onAdminHotkeys = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -700,6 +714,11 @@ export function Admin() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {leadBanner && (
+          <div className="rounded-2xl border border-green-200 bg-green-50 text-green-900 px-4 py-3 font-semibold">
+            {leadBanner}
+          </div>
+        )}
         <div className="flex flex-wrap gap-2">
           {[
             ['dashboard', isRTL ? 'דשבורד' : 'Dashboard'],
@@ -1023,6 +1042,24 @@ export function Admin() {
                 <div className="flex flex-wrap gap-2">
                   <button
                     onClick={() => {
+                      requestAdminLocalNotificationsPermission()
+                        .then((granted) => {
+                          setSettingsMessage(
+                            granted
+                              ? (isRTL ? 'הרשאת התראות אושרה' : 'Notifications permission granted')
+                              : (isRTL ? 'לא אושרה הרשאת התראות' : 'Notifications permission not granted'),
+                          );
+                        })
+                        .catch((error) => {
+                          setSettingsMessage(error instanceof Error ? error.message : isRTL ? 'שגיאת הרשאות התראות' : 'Notification permission error');
+                        });
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 font-semibold"
+                  >
+                    {isRTL ? 'אשר הרשאת התראות' : 'Allow Notifications'}
+                  </button>
+                  <button
+                    onClick={() => {
                       setPushBusy(true);
                       registerAdminPushToken(isRTL)
                         .then((token) => {
@@ -1040,6 +1077,30 @@ export function Admin() {
                     disabled={pushBusy}
                   >
                     {pushBusy ? (isRTL ? 'מעדכן...' : 'Updating...') : isRTL ? 'רענן Push' : 'Refresh Push'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      notifyLeadReceived(
+                        {
+                          fullName: isRTL ? 'בדיקת התראה' : 'Notification Test',
+                          projectType: isRTL ? 'בדיקת מערכת' : 'System check',
+                        },
+                        isRTL,
+                      )
+                        .then((result) => {
+                          setSettingsMessage(
+                            result.delivered
+                              ? (isRTL ? 'נשלחה התראת בדיקה' : 'Test notification sent')
+                              : (result.reason || (isRTL ? 'התראת בדיקה נכשלה' : 'Test notification failed')),
+                          );
+                        })
+                        .catch((error) => {
+                          setSettingsMessage(error instanceof Error ? error.message : isRTL ? 'התראת בדיקה נכשלה' : 'Test notification failed');
+                        });
+                    }}
+                    className="px-4 py-2 rounded-lg border border-gray-300 font-semibold"
+                  >
+                    {isRTL ? 'בדוק התראה' : 'Test Notification'}
                   </button>
                   <button
                     onClick={() => copyText(pushToken)}

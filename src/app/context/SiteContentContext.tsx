@@ -243,6 +243,24 @@ function parseStoredContent(value: string | null): SiteContent | null {
   }
 }
 
+function mergeRemotePayload(base: SiteContent, payload: unknown): SiteContent | null {
+  if (!payload || typeof payload !== 'object') return null;
+  const candidate = payload as Partial<SiteContent>;
+  const merged: SiteContent = {
+    ...base,
+    projects: Array.isArray(candidate.projects) ? (candidate.projects as ProjectItem[]) : base.projects,
+    articles: Array.isArray(candidate.articles) ? (candidate.articles as ArticleItem[]) : base.articles,
+    faqs: Array.isArray(candidate.faqs) ? (candidate.faqs as FAQItem[]) : base.faqs,
+    leads: Array.isArray(candidate.leads) ? (candidate.leads as LeadItem[]) : base.leads,
+    homeSections: Array.isArray(candidate.homeSections) ? (candidate.homeSections as HomeSectionId[]) : base.homeSections,
+    siteInfo:
+      candidate.siteInfo && typeof candidate.siteInfo === 'object'
+        ? { ...base.siteInfo, ...(candidate.siteInfo as Partial<SiteInfo>) }
+        : base.siteInfo,
+  };
+  return normalizeContent(merged);
+}
+
 function normalizeContent(content: SiteContent): SiteContent {
   const normalizedEmail =
     !content.siteInfo?.email || content.siteInfo.email === 'hello@yoursite.com'
@@ -286,22 +304,32 @@ function debugLog(message: string, error?: unknown) {
 
 async function loadRemoteContent(): Promise<SiteContent | null> {
   if (!supabase) return null;
-  const { data, error } = await supabase
+  const { data: mainData, error: mainError } = await supabase
     .from(REMOTE_TABLE)
     .select('payload')
     .eq('id', REMOTE_ROW_ID)
     .maybeSingle();
 
-  if (error) {
-    throw error;
+  if (mainError) {
+    throw mainError;
   }
 
-  const payload = data?.payload as unknown;
-  if (!payload || !isValidSiteContentObject(payload)) {
-    return null;
+  const mainPayload = mainData?.payload as unknown;
+  const mergedMain = mergeRemotePayload(defaultContent, mainPayload);
+  if (mergedMain) {
+    return mergedMain;
   }
 
-  return payload;
+  const { data: latestRows, error: latestError } = await supabase
+    .from(REMOTE_TABLE)
+    .select('payload')
+    .order('updated_at', { ascending: false })
+    .limit(1);
+
+  if (latestError) throw latestError;
+  if (!latestRows || latestRows.length === 0) return null;
+
+  return mergeRemotePayload(defaultContent, latestRows[0].payload as unknown);
 }
 
 async function canWriteRemoteContent() {
@@ -566,6 +594,38 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!supabase || !isSupabaseConfigured) return;
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+    channel = supabase
+      .channel('site-content-live')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: REMOTE_TABLE },
+        (payload) => {
+          const row =
+            (payload.new as { id?: string; payload?: unknown } | null) ||
+            (payload.old as { id?: string; payload?: unknown } | null);
+          if (!row) return;
+          if (row.id && row.id !== REMOTE_ROW_ID) return;
+          const next = mergeRemotePayload(defaultContent, row.payload);
+          if (!next) return;
+          setContent((prev) => ({
+            ...prev,
+            ...next,
+            leads: prev.leads,
+          }));
+        },
+      )
+      .subscribe();
+
+    return () => {
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
+    };
   }, []);
 
   useEffect(() => {
