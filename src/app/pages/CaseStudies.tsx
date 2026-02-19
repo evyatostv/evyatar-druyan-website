@@ -20,7 +20,7 @@ export function CaseStudies() {
         <div className="container mx-auto px-4 sm:px-6 max-w-6xl">
           <div className="text-center mb-20" dir={isRTL ? 'rtl' : 'ltr'}>
             <h1 className="text-4xl sm:text-5xl md:text-7xl font-extrabold text-gray-900 mb-6 tracking-tight">
-              {isRTL ? 'מקרי בוחן' : 'Case Studies'}
+              {isRTL ? 'פרוייקטים' : 'Case Studies'}
             </h1>
             <p className="text-2xl text-gray-500 max-w-3xl mx-auto font-light">
               {isRTL

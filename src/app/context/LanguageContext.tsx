@@ -14,7 +14,7 @@ const translations: Record<Language, Record<string, string>> = {
   he: {
     home: 'בית',
     services: 'שירותים',
-    caseStudies: 'מקרי בוחן',
+    caseStudies: 'פרוייקטים',
     pricing: 'תמחור',
     about: 'אודות',
     contact: 'יצירת קשר',
