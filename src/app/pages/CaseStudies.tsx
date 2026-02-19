@@ -1,5 +1,5 @@
 import { Link } from 'react-router';
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Globe } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
 import { useSiteContent } from '../context/SiteContentContext';
@@ -34,7 +34,7 @@ export function CaseStudies() {
               <Link
                 key={project.id}
                 to={`/case-studies/${project.id}`}
-                className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105"
+                className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 hover:scale-105 flex flex-col h-full"
                 dir={isRTL ? 'rtl' : 'ltr'}
               >
                 <div className="relative h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
@@ -45,14 +45,14 @@ export function CaseStudies() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
                 </div>
-                <div className="p-8">
+                <div className="p-8 flex flex-col flex-1">
                   <div className="inline-block text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
                     {isRTL ? project.categoryHe : project.categoryEn}
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-3">{isRTL ? project.titleHe : project.titleEn}</h3>
-                  <p className="text-gray-600 mb-4 leading-relaxed">{isRTL ? project.descriptionHe : project.descriptionEn}</p>
-                  <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-5 py-3 rounded-2xl">
-                    <TrendingUp className="w-6 h-6 text-green-600" />
+                  <p className="text-gray-600 mb-6 leading-relaxed">{isRTL ? project.descriptionHe : project.descriptionEn}</p>
+                  <div className="mt-auto flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-5 py-3 rounded-2xl">
+                    <Globe className="w-6 h-6 text-green-600" />
                     <span className="font-bold text-lg break-all">
                       {project.liveUrl ? formatDisplayUrl(project.liveUrl) : isRTL ? project.resultHe : project.resultEn}
                     </span>

@@ -1,4 +1,4 @@
-import { ArrowLeft, TrendingUp } from 'lucide-react';
+import { ArrowLeft, Globe } from 'lucide-react';
 import { Link } from 'react-router';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
@@ -18,7 +18,7 @@ export function Portfolio() {
     he: {
       title: 'פרוייקטים עם תוצאה מדידה',
       subtitle: 'פרויקטים אמיתיים שהשפיעו על צמיחה, מכירות ולידים',
-      cta: 'לכל מקרי הבוחן',
+      cta: 'לכל הפרוייקטים',
     },
     en: {
       title: 'Case Studies with Measurable Impact',
@@ -41,7 +41,7 @@ export function Portfolio() {
           {projects.map((project) => (
             <div
               key={project.id}
-              className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500"
+              className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col h-full"
             >
               <div className="relative h-52 sm:h-56 overflow-hidden bg-gradient-to-br from-gray-100 to-gray-50">
                 <ImageWithFallback
@@ -51,13 +51,13 @@ export function Portfolio() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
-              <div className="p-6 sm:p-8">
+              <div className="p-6 sm:p-8 flex flex-col flex-1">
                 <div className="inline-block text-xs sm:text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
                   {isRTL ? project.categoryHe : project.categoryEn}
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{isRTL ? project.titleHe : project.titleEn}</h3>
-                <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-4 sm:px-5 py-3 rounded-2xl">
-                  <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
+                <div className="mt-auto flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-4 sm:px-5 py-3 rounded-2xl">
+                  <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                   <span className="font-bold text-base sm:text-lg break-all">
                     {project.liveUrl ? formatDisplayUrl(project.liveUrl) : isRTL ? project.resultHe : project.resultEn}
                   </span>
