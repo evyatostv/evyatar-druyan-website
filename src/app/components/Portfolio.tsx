@@ -2,12 +2,13 @@ import { ArrowLeft, TrendingUp } from 'lucide-react';
 import { Link } from 'react-router';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
-import { defaultProjectsFromCsv } from '../data/projects';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export function Portfolio() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
-  const projects = defaultProjectsFromCsv;
+  const { content } = useSiteContent();
+  const projects = content.projects;
 
   const copy = {
     he: {

@@ -2,12 +2,13 @@ import { Link } from 'react-router';
 import { ArrowLeft, TrendingUp } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
-import { defaultProjectsFromCsv } from '../data/projects';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export function CaseStudies() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
-  const projects = defaultProjectsFromCsv;
+  const { content } = useSiteContent();
+  const projects = content.projects;
 
   return (
     <div className="pt-20 bg-gradient-to-b from-gray-50/30 to-white">

@@ -2,14 +2,20 @@ import { useParams, Link } from 'react-router';
 import { ArrowRight, ExternalLink, TrendingUp } from 'lucide-react';
 import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
-import { defaultProjectsFromCsv } from '../data/projects';
+import { useSiteContent } from '../context/SiteContentContext';
 
 export function CaseStudyDetail() {
   const { id } = useParams<{ id: string }>();
   const { language } = useLanguage();
   const isRTL = language === 'he';
+  const { content } = useSiteContent();
 
-  const project = defaultProjectsFromCsv.find((item) => item.id === id) || defaultProjectsFromCsv[0];
+  const projects = content.projects;
+  const project = projects.find((item) => item.id === id) || projects[0];
+
+  if (!project) {
+    return null;
+  }
 
   const copy = {
     he: {

@@ -82,8 +82,6 @@ export interface SiteContent {
 }
 
 const STORAGE_KEY = 'site-content-v1';
-const PROJECTS_IMPORT_STORAGE_KEY = 'projects-import-version';
-const PROJECTS_IMPORT_VERSION = 'projects-csv-2026-02-19';
 const REMOTE_TABLE = 'site_content';
 const REMOTE_ROW_ID = 'main';
 const REMOTE_SAVE_DEBOUNCE_MS = 800;
@@ -195,22 +193,10 @@ function parseStoredContent(value: string | null): SiteContent | null {
 }
 
 const LEGACY_DEFAULT_PROJECT_IDS = new Set(['ecommerce-redesign', 'saas-landing', 'meta-ads-campaign', 'b2b-lead-generation']);
-const CSV_PROJECT_IDS = new Set([
-  'dr-amit-website',
-  'clothing-brand-store',
-  'revital-studio-website',
-  'netta-zentner-portfolio',
-  'yochi-engleister-portfolio',
-]);
 
 function shouldReplaceLegacyProjects(projects: ProjectItem[]) {
   if (!Array.isArray(projects) || projects.length !== LEGACY_DEFAULT_PROJECT_IDS.size) return false;
   return projects.every((project) => LEGACY_DEFAULT_PROJECT_IDS.has(project.id));
-}
-
-function hasCsvProjects(projects: ProjectItem[]) {
-  if (!Array.isArray(projects) || projects.length !== CSV_PROJECT_IDS.size) return false;
-  return projects.every((project) => CSV_PROJECT_IDS.has(project.id));
 }
 
 function migrateProjectsIfNeeded(content: SiteContent): SiteContent {
@@ -221,22 +207,11 @@ function migrateProjectsIfNeeded(content: SiteContent): SiteContent {
   };
 }
 
-function forceCsvProjectsImport(content: SiteContent): SiteContent {
-  return {
-    ...content,
-    projects: defaultProjectsFromCsv,
-  };
-}
-
 function mergeRemotePayload(base: SiteContent, payload: unknown): SiteContent | null {
   if (!payload || typeof payload !== 'object') return null;
   const candidate = payload as Partial<SiteContent>;
   const candidateProjects = Array.isArray(candidate.projects) ? (candidate.projects as ProjectItem[]) : base.projects;
-  const resolvedProjects = hasCsvProjects(candidateProjects)
-    ? candidateProjects
-    : shouldReplaceLegacyProjects(candidateProjects)
-      ? defaultProjectsFromCsv
-      : defaultProjectsFromCsv;
+  const resolvedProjects = shouldReplaceLegacyProjects(candidateProjects) ? defaultProjectsFromCsv : candidateProjects;
   const merged: SiteContent = {
     ...base,
     projects: resolvedProjects,
@@ -509,7 +484,6 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     const hydrate = async () => {
       const stored = parseStoredContent(localStorage.getItem(STORAGE_KEY));
       let next = stored ? normalizeContent(stored) : defaultContent;
-      let shouldSaveImportedProjects = false;
 
       if (isSupabaseConfigured) {
         try {
@@ -531,21 +505,6 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           if (!isAbortError(error)) {
             debugLog('Supabase load failed, fallback to local cache.', error);
           }
-        }
-      }
-
-      const importedVersion = localStorage.getItem(PROJECTS_IMPORT_STORAGE_KEY);
-      if (importedVersion !== PROJECTS_IMPORT_VERSION) {
-        next = forceCsvProjectsImport(next);
-        localStorage.setItem(PROJECTS_IMPORT_STORAGE_KEY, PROJECTS_IMPORT_VERSION);
-        shouldSaveImportedProjects = true;
-      }
-
-      if (isSupabaseConfigured && shouldSaveImportedProjects) {
-        try {
-          await saveRemoteContent(next);
-        } catch {
-          // save may be blocked for public sessions; keep local imported projects
         }
       }
 
