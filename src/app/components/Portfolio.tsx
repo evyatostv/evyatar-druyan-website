@@ -54,7 +54,7 @@ export function Portfolio() {
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{isRTL ? project.titleHe : project.titleEn}</h3>
                 <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-4 sm:px-5 py-3 rounded-2xl">
                   <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
-                  <span className="font-bold text-base sm:text-lg">{isRTL ? project.resultHe : project.resultEn}</span>
+                  <span className="font-bold text-base sm:text-lg break-all">{project.liveUrl || (isRTL ? project.resultHe : project.resultEn)}</span>
                 </div>
               </div>
             </div>

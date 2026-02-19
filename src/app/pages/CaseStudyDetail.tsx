@@ -68,7 +68,9 @@ export function CaseStudyDetail() {
                 <TrendingUp className="w-7 h-7 text-teal-200" />
                 <h2 className="text-2xl font-bold">{copy.result}</h2>
               </div>
-              <p className="text-3xl font-extrabold mb-6">{isRTL ? project.resultHe : project.resultEn}</p>
+              <p className="text-xl sm:text-2xl font-extrabold mb-6 break-all">
+                {project.liveUrl || (isRTL ? project.resultHe : project.resultEn)}
+              </p>
 
               {project.liveUrl ? (
                 <a
