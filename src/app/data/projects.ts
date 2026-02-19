@@ -45,7 +45,7 @@ export const defaultProjectsFromCsv: DefaultProjectItem[] = [
   },
   {
     id: 'revital-studio-website',
-    image: '',
+    image: '/projects/revital-studio-website.png',
     titleEn: 'Website for a clothing studio',
     titleHe: 'אתר לסטודיו בגדים',
     liveUrl: 'https://revitalstudio.co.il',
