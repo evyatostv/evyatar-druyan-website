@@ -207,18 +207,63 @@ function migrateProjectsIfNeeded(content: SiteContent): SiteContent {
   };
 }
 
+function normalizeComparableText(value: string | undefined): string {
+  return (value || '').trim().toLowerCase();
+}
+
+function normalizeUrlForMatch(url: string | undefined): string {
+  const raw = (url || '').trim().toLowerCase();
+  if (!raw) return '';
+  const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+  try {
+    const parsed = new URL(withProtocol);
+    const host = parsed.hostname.replace(/^www\./, '');
+    const path = parsed.pathname.replace(/\/+$/, '');
+    return `${host}${path}`;
+  } catch {
+    return raw.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/+$/, '');
+  }
+}
+
+function findDefaultProjectMatch(project: ProjectItem): ProjectItem | undefined {
+  const byId = defaultProjectsFromCsv.find((item) => item.id === project.id);
+  if (byId) return byId;
+
+  const projectUrl = normalizeUrlForMatch(project.liveUrl || project.resultEn || project.resultHe);
+  if (projectUrl) {
+    const byUrl = defaultProjectsFromCsv.find((item) => normalizeUrlForMatch(item.liveUrl) === projectUrl);
+    if (byUrl) return byUrl;
+  }
+
+  const titleHe = normalizeComparableText(project.titleHe);
+  if (titleHe) {
+    const byTitleHe = defaultProjectsFromCsv.find((item) => normalizeComparableText(item.titleHe) === titleHe);
+    if (byTitleHe) return byTitleHe;
+  }
+
+  const titleEn = normalizeComparableText(project.titleEn);
+  if (titleEn) {
+    const byTitleEn = defaultProjectsFromCsv.find((item) => normalizeComparableText(item.titleEn) === titleEn);
+    if (byTitleEn) return byTitleEn;
+  }
+
+  return undefined;
+}
+
 function enrichProjectsWithDefaults(projects: ProjectItem[]): ProjectItem[] {
-  const defaultsById = new Map(defaultProjectsFromCsv.map((item) => [item.id, item]));
   const hasAnyLiveUrl = projects.some((project) => Boolean(project.liveUrl));
   return projects.map((project) => {
-    const defaults = defaultsById.get(project.id);
+    const defaults = findDefaultProjectMatch(project);
     const fallbackByOrder = !hasAnyLiveUrl ? defaultProjectsFromCsv[projects.indexOf(project)] : undefined;
     const base = defaults || fallbackByOrder;
     if (!base) return project;
     return {
       ...project,
+      id: base.id,
+      titleHe: base.titleHe,
+      titleEn: base.titleEn,
       liveUrl: project.liveUrl || base.liveUrl || '',
-      // Force canonical image per project id so old cached mappings don't persist.
+      // Force canonical image per known project so old cached mappings don't persist.
       image: base.image,
     };
   });
@@ -243,14 +288,31 @@ function normalizeLiveUrlField(projects: ProjectItem[]): ProjectItem[] {
   });
 }
 
+function applyProjectCategoryRules(project: ProjectItem): ProjectItem {
+  const storeMarketingIds = new Set(['clothing-brand-store', 'revital-studio-website']);
+  if (storeMarketingIds.has(project.id)) {
+    return {
+      ...project,
+      categoryHe: 'חנות + שיווק',
+      categoryEn: 'Store + Marketing',
+    };
+  }
+  return {
+    ...project,
+    categoryHe: 'עיצוב אתר',
+    categoryEn: 'Website Design',
+  };
+}
+
 function normalizeProjectData(projects: ProjectItem[]): ProjectItem[] {
   const enriched = enrichProjectsWithDefaults(projects);
   return normalizeLiveUrlField(enriched).map((project) => {
     const liveUrl = project.liveUrl?.trim() || '';
-    if (!liveUrl) return project;
+    const withCategories = applyProjectCategoryRules(project);
+    if (!liveUrl) return withCategories;
     const normalized = /^https?:\/\//i.test(liveUrl) ? liveUrl : `https://${liveUrl}`;
     return {
-      ...project,
+      ...withCategories,
       liveUrl: normalized,
     };
   });
@@ -525,7 +587,10 @@ function mapLeadRow(row: {
 }
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {
-  const [content, setContent] = useState<SiteContent>(defaultContent);
+  const [content, setContent] = useState<SiteContent>(() => {
+    const stored = parseStoredContent(localStorage.getItem(STORAGE_KEY));
+    return stored ? normalizeContent(stored) : defaultContent;
+  });
   const [hydrated, setHydrated] = useState(false);
   const remoteSaveTimerRef = useRef<number | null>(null);
 

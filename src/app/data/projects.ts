@@ -34,8 +34,8 @@ export const defaultProjectsFromCsv: DefaultProjectItem[] = [
     titleEn: 'Online clothing store',
     titleHe: 'חנות למותג בגדים',
     liveUrl: 'https://kabiofficial.com',
-    categoryEn: 'Landing Page',
-    categoryHe: 'חנות דיגיטלית',
+    categoryEn: 'Store + Marketing',
+    categoryHe: 'חנות + שיווק',
     resultEn: 'Live Website',
     resultHe: 'אתר חי באוויר',
     descriptionEn:
@@ -49,8 +49,8 @@ export const defaultProjectsFromCsv: DefaultProjectItem[] = [
     titleEn: 'Website for a clothing studio',
     titleHe: 'אתר לסטודיו בגדים',
     liveUrl: 'https://revitalstudio.co.il',
-    categoryEn: 'Website Design',
-    categoryHe: 'עיצוב אתרים',
+    categoryEn: 'Store + Marketing',
+    categoryHe: 'חנות + שיווק',
     resultEn: 'Live Website',
     resultHe: 'אתר חי באוויר',
     descriptionEn:
