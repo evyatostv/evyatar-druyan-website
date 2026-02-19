@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { isSupabaseConfigured, supabase, supabaseConfig } from '../../lib/supabase';
+import { defaultProjectsFromCsv } from '../data/projects';
 
 export type HomeSectionId =
   | 'hero'
@@ -21,6 +22,7 @@ export interface ProjectItem {
   resultEn: string;
   descriptionHe: string;
   descriptionEn: string;
+  liveUrl?: string;
 }
 
 export interface ArticleItem {
@@ -80,6 +82,8 @@ export interface SiteContent {
 }
 
 const STORAGE_KEY = 'site-content-v1';
+const PROJECTS_IMPORT_STORAGE_KEY = 'projects-import-version';
+const PROJECTS_IMPORT_VERSION = 'projects-csv-2026-02-19';
 const REMOTE_TABLE = 'site_content';
 const REMOTE_ROW_ID = 'main';
 const REMOTE_SAVE_DEBOUNCE_MS = 800;
@@ -87,60 +91,7 @@ const LEADS_TABLE = 'leads';
 const IS_DEV = import.meta.env.DEV;
 
 const defaultContent: SiteContent = {
-  projects: [
-    {
-      id: 'ecommerce-redesign',
-      image:
-        'https://images.unsplash.com/photo-1612831661941-254341b885e9?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBlY29tbWVyY2UlMjB3ZWJzaXRlJTIwbGFwdG9wfGVufDF8fHx8MTc3MTA5NDQxM3ww&ixlib=rb-4.1.0&q=80&w=1080',
-      titleHe: 'עיצוב מחדש של חנות מסחר',
-      titleEn: 'Ecommerce Store Redesign',
-      categoryHe: 'עיצוב אתרים',
-      categoryEn: 'Website Design',
-      resultHe: 'עלייה של 142% בהמרות',
-      resultEn: '142% Increase in Conversions',
-      descriptionHe: 'שדרוג מלא לחנות אונליין עם חוויית משתמש נקייה ותהליך רכישה שממיר טוב יותר.',
-      descriptionEn: 'Complete overhaul of an online store with focus on user experience and conversion optimization',
-    },
-    {
-      id: 'saas-landing',
-      image:
-        'https://images.unsplash.com/photo-1588511986632-592db3d6c81f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMHdlYnNpdGUlMjBkZXNpZ24lMjBkYXNoYm9hcmR8ZW58MXx8fHwxNzcxMDk0NDEzfDA&ixlib=rb-4.1.0&q=80&w=1080',
-      titleHe: 'דף נחיתה SaaS',
-      titleEn: 'SaaS Landing Page',
-      categoryHe: 'דף נחיתה',
-      categoryEn: 'Landing Page',
-      resultHe: 'פי 3.2 יותר לידים איכותיים',
-      resultEn: '3.2x More Qualified Leads',
-      descriptionHe: 'דף נחיתה ממוקד ביצועים לפלטפורמת SaaS שמביא יותר פניות מתאימות.',
-      descriptionEn: 'High-converting landing page for B2B SaaS platform',
-    },
-    {
-      id: 'meta-ads-campaign',
-      image:
-        'https://images.unsplash.com/photo-1759215524600-7971d6a4dac0?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxkaWdpdGFsJTIwbWFya2V0aW5nJTIwYW5hbHl0aWNzJTIwc2NyZWVufGVufDF8fHx8MTc3MTA5NDQxNHww&ixlib=rb-4.1.0&q=80&w=1080',
-      titleHe: 'קמפיין Meta Ads',
-      titleEn: 'Meta Ads Campaign',
-      categoryHe: 'פרסום ממומן',
-      categoryEn: 'Paid Advertising',
-      resultHe: 'ROAS של 4.8 בתוך 60 יום',
-      resultEn: '$4.80 ROAS in 60 Days',
-      descriptionHe: 'קמפיין Meta עם אסטרטגיה ברורה, בדיקות קריאייטיב ושיפור עקבי של עלות תוצאה.',
-      descriptionEn: 'Strategic Meta advertising campaign with focus on ROI',
-    },
-    {
-      id: 'b2b-lead-generation',
-      image:
-        'https://images.unsplash.com/photo-1510924014959-7e1849088bfe?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBsYW5kaW5nJTIwcGFnZSUyMG1vY2t1cHxlbnwxfHx8fDE3NzEwOTQ0MTN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-      titleHe: 'יצירת לידים B2B',
-      titleEn: 'B2B Lead Generation',
-      categoryHe: 'אתר + מודעות',
-      categoryEn: 'Website + Ads',
-      resultHe: '89 לידים איכותיים ב-30 יום',
-      resultEn: '89 Qualified Leads in 30 Days',
-      descriptionHe: 'מערכת משולבת של אתר ומודעות שהגדילה את נפח הלידים בלי לפגוע באיכות.',
-      descriptionEn: 'Integrated website and advertising system for quality B2B lead generation',
-    },
-  ],
+  projects: defaultProjectsFromCsv,
   articles: [
     {
       slug: 'critical-website-elements',
@@ -243,12 +194,52 @@ function parseStoredContent(value: string | null): SiteContent | null {
   }
 }
 
+const LEGACY_DEFAULT_PROJECT_IDS = new Set(['ecommerce-redesign', 'saas-landing', 'meta-ads-campaign', 'b2b-lead-generation']);
+const CSV_PROJECT_IDS = new Set([
+  'dr-amit-website',
+  'clothing-brand-store',
+  'revital-studio-website',
+  'netta-zentner-portfolio',
+  'yochi-engleister-portfolio',
+]);
+
+function shouldReplaceLegacyProjects(projects: ProjectItem[]) {
+  if (!Array.isArray(projects) || projects.length !== LEGACY_DEFAULT_PROJECT_IDS.size) return false;
+  return projects.every((project) => LEGACY_DEFAULT_PROJECT_IDS.has(project.id));
+}
+
+function hasCsvProjects(projects: ProjectItem[]) {
+  if (!Array.isArray(projects) || projects.length !== CSV_PROJECT_IDS.size) return false;
+  return projects.every((project) => CSV_PROJECT_IDS.has(project.id));
+}
+
+function migrateProjectsIfNeeded(content: SiteContent): SiteContent {
+  if (!shouldReplaceLegacyProjects(content.projects)) return content;
+  return {
+    ...content,
+    projects: defaultProjectsFromCsv,
+  };
+}
+
+function forceCsvProjectsImport(content: SiteContent): SiteContent {
+  return {
+    ...content,
+    projects: defaultProjectsFromCsv,
+  };
+}
+
 function mergeRemotePayload(base: SiteContent, payload: unknown): SiteContent | null {
   if (!payload || typeof payload !== 'object') return null;
   const candidate = payload as Partial<SiteContent>;
+  const candidateProjects = Array.isArray(candidate.projects) ? (candidate.projects as ProjectItem[]) : base.projects;
+  const resolvedProjects = hasCsvProjects(candidateProjects)
+    ? candidateProjects
+    : shouldReplaceLegacyProjects(candidateProjects)
+      ? defaultProjectsFromCsv
+      : defaultProjectsFromCsv;
   const merged: SiteContent = {
     ...base,
-    projects: Array.isArray(candidate.projects) ? (candidate.projects as ProjectItem[]) : base.projects,
+    projects: resolvedProjects,
     articles: Array.isArray(candidate.articles) ? (candidate.articles as ArticleItem[]) : base.articles,
     faqs: Array.isArray(candidate.faqs) ? (candidate.faqs as FAQItem[]) : base.faqs,
     leads: Array.isArray(candidate.leads) ? (candidate.leads as LeadItem[]) : base.leads,
@@ -262,18 +253,19 @@ function mergeRemotePayload(base: SiteContent, payload: unknown): SiteContent | 
 }
 
 function normalizeContent(content: SiteContent): SiteContent {
+  const migrated = migrateProjectsIfNeeded(content);
   const normalizedEmail =
-    !content.siteInfo?.email || content.siteInfo.email === 'hello@yoursite.com'
+    !migrated.siteInfo?.email || migrated.siteInfo.email === 'hello@yoursite.com'
       ? 'contact@drd.co.il'
-      : content.siteInfo.email;
+      : migrated.siteInfo.email;
 
   return {
-    ...content,
+    ...migrated,
     siteInfo: {
-      ...content.siteInfo,
+      ...migrated.siteInfo,
       email: normalizedEmail,
     },
-    leads: (content.leads || []).map((lead) => ({
+    leads: (migrated.leads || []).map((lead) => ({
       ...lead,
       phone: lead.phone || '',
     })),
@@ -517,6 +509,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     const hydrate = async () => {
       const stored = parseStoredContent(localStorage.getItem(STORAGE_KEY));
       let next = stored ? normalizeContent(stored) : defaultContent;
+      let shouldSaveImportedProjects = false;
 
       if (isSupabaseConfigured) {
         try {
@@ -538,6 +531,21 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
           if (!isAbortError(error)) {
             debugLog('Supabase load failed, fallback to local cache.', error);
           }
+        }
+      }
+
+      const importedVersion = localStorage.getItem(PROJECTS_IMPORT_STORAGE_KEY);
+      if (importedVersion !== PROJECTS_IMPORT_VERSION) {
+        next = forceCsvProjectsImport(next);
+        localStorage.setItem(PROJECTS_IMPORT_STORAGE_KEY, PROJECTS_IMPORT_VERSION);
+        shouldSaveImportedProjects = true;
+      }
+
+      if (isSupabaseConfigured && shouldSaveImportedProjects) {
+        try {
+          await saveRemoteContent(next);
+        } catch {
+          // save may be blocked for public sessions; keep local imported projects
         }
       }
 

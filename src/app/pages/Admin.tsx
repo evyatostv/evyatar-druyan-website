@@ -187,6 +187,7 @@ export function Admin() {
   const [newProject, setNewProject] = useState<ProjectItem>({
     id: '',
     image: '',
+    liveUrl: '',
     titleHe: '',
     titleEn: '',
     categoryHe: '',
@@ -834,7 +835,19 @@ export function Admin() {
                   onClick={() => {
                     if (!newProject.id.trim()) return;
                     setContent((prev) => ({ ...prev, projects: [...prev.projects, newProject] }));
-                    setNewProject({ id: '', image: '', titleHe: '', titleEn: '', categoryHe: '', categoryEn: '', resultHe: '', resultEn: '', descriptionHe: '', descriptionEn: '' });
+                    setNewProject({
+                      id: '',
+                      image: '',
+                      liveUrl: '',
+                      titleHe: '',
+                      titleEn: '',
+                      categoryHe: '',
+                      categoryEn: '',
+                      resultHe: '',
+                      resultEn: '',
+                      descriptionHe: '',
+                      descriptionEn: '',
+                    });
                   }}
                   className="px-3 py-2 rounded-lg bg-blue-600 text-white text-sm"
                 >
