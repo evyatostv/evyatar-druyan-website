@@ -207,6 +207,55 @@ function migrateProjectsIfNeeded(content: SiteContent): SiteContent {
   };
 }
 
+function enrichProjectsWithDefaults(projects: ProjectItem[]): ProjectItem[] {
+  const defaultsById = new Map(defaultProjectsFromCsv.map((item) => [item.id, item]));
+  const hasAnyLiveUrl = projects.some((project) => Boolean(project.liveUrl));
+  return projects.map((project) => {
+    const defaults = defaultsById.get(project.id);
+    const fallbackByOrder = !hasAnyLiveUrl ? defaultProjectsFromCsv[projects.indexOf(project)] : undefined;
+    const base = defaults || fallbackByOrder;
+    if (!base) return project;
+    return {
+      ...project,
+      liveUrl: project.liveUrl || base.liveUrl || '',
+      // Force canonical image per project id so old cached mappings don't persist.
+      image: base.image,
+    };
+  });
+}
+
+function hasUrlLikeResult(project: ProjectItem) {
+  const resultText = `${project.resultEn || ''} ${project.resultHe || ''}`.toLowerCase();
+  return resultText.includes('http://') || resultText.includes('https://') || resultText.includes('www.');
+}
+
+function normalizeLiveUrlField(projects: ProjectItem[]): ProjectItem[] {
+  return projects.map((project) => {
+    if (project.liveUrl) return project;
+    if (hasUrlLikeResult(project)) {
+      const raw = project.resultEn || project.resultHe || '';
+      return {
+        ...project,
+        liveUrl: raw.trim(),
+      };
+    }
+    return project;
+  });
+}
+
+function normalizeProjectData(projects: ProjectItem[]): ProjectItem[] {
+  const enriched = enrichProjectsWithDefaults(projects);
+  return normalizeLiveUrlField(enriched).map((project) => {
+    const liveUrl = project.liveUrl?.trim() || '';
+    if (!liveUrl) return project;
+    const normalized = /^https?:\/\//i.test(liveUrl) ? liveUrl : `https://${liveUrl}`;
+    return {
+      ...project,
+      liveUrl: normalized,
+    };
+  });
+}
+
 function mergeRemotePayload(base: SiteContent, payload: unknown): SiteContent | null {
   if (!payload || typeof payload !== 'object') return null;
   const candidate = payload as Partial<SiteContent>;
@@ -229,6 +278,7 @@ function mergeRemotePayload(base: SiteContent, payload: unknown): SiteContent | 
 
 function normalizeContent(content: SiteContent): SiteContent {
   const migrated = migrateProjectsIfNeeded(content);
+  const normalizedProjects = normalizeProjectData(migrated.projects || []);
   const normalizedEmail =
     !migrated.siteInfo?.email || migrated.siteInfo.email === 'hello@yoursite.com'
       ? 'contact@drd.co.il'
@@ -236,6 +286,7 @@ function normalizeContent(content: SiteContent): SiteContent {
 
   return {
     ...migrated,
+    projects: normalizedProjects,
     siteInfo: {
       ...migrated.siteInfo,
       email: normalizedEmail,

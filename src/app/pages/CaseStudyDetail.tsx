@@ -4,6 +4,10 @@ import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
 import { useSiteContent } from '../context/SiteContentContext';
 
+function formatDisplayUrl(url: string) {
+  return url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+}
+
 export function CaseStudyDetail() {
   const { id } = useParams<{ id: string }>();
   const { language } = useLanguage();
@@ -19,6 +23,7 @@ export function CaseStudyDetail() {
 
   const copy = {
     he: {
+      back: 'חזרה',
       overview: 'סקירת הפרויקט',
       result: 'התוצאה',
       visit: 'צפה באתר',
@@ -27,6 +32,7 @@ export function CaseStudyDetail() {
       ctaBtn: 'בקשו הצעה',
     },
     en: {
+      back: 'Back to all projects',
       overview: 'Project Overview',
       result: 'Result',
       visit: 'Visit Website',
@@ -40,7 +46,17 @@ export function CaseStudyDetail() {
     <div className="pt-20 bg-white">
       <section className="py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="container mx-auto px-4 sm:px-6 max-w-5xl" dir={isRTL ? 'rtl' : 'ltr'}>
-          <div className="inline-block text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-5 py-2 rounded-full font-semibold mb-6">
+          <div className="mb-8">
+            <Link
+              to="/case-studies"
+              className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-900 transition-colors text-sm font-medium"
+            >
+              {isRTL ? <ArrowRight className="w-3.5 h-3.5" /> : <ArrowRight className="w-3.5 h-3.5 rotate-180" />}
+              {copy.back}
+            </Link>
+          </div>
+
+          <div className="inline-block text-base bg-gradient-to-l from-blue-600 to-teal-600 text-white px-6 py-2.5 rounded-full font-bold mb-6">
             {isRTL ? project.categoryHe : project.categoryEn}
           </div>
           <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 mb-8 leading-tight tracking-tight">
@@ -69,7 +85,7 @@ export function CaseStudyDetail() {
                 <h2 className="text-2xl font-bold">{copy.result}</h2>
               </div>
               <p className="text-xl sm:text-2xl font-extrabold mb-6 break-all">
-                {project.liveUrl || (isRTL ? project.resultHe : project.resultEn)}
+                {project.liveUrl ? formatDisplayUrl(project.liveUrl) : isRTL ? project.resultHe : project.resultEn}
               </p>
 
               {project.liveUrl ? (

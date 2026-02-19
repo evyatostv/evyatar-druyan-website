@@ -7,6 +7,15 @@ import { LanguageProvider } from './app/context/LanguageContext';
 import { SiteContentProvider } from './app/context/SiteContentContext';
 import './styles/index.css';
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('unhandledrejection', (event) => {
+    const reason = event.reason;
+    if (reason instanceof DOMException && reason.name === 'AbortError') {
+      event.preventDefault();
+    }
+  });
+}
+
 const forceNativeAdmin = import.meta.env.VITE_NATIVE_APP === 'true';
 const isNativeApp =
   forceNativeAdmin ||

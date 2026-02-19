@@ -27,6 +27,8 @@ export const supabaseConfig = {
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey);
 
+const noOpLock = async <T>(_name: string, _acquireTimeout: number, fn: () => Promise<T>) => fn();
+
 const resilientFetch: typeof fetch = async (input, init) => {
   const toRequestUrl = () => (input instanceof Request ? input.url : input);
 
@@ -73,6 +75,8 @@ export const supabase = isSupabaseConfigured
       auth: {
         persistSession: true,
         autoRefreshToken: true,
+        detectSessionInUrl: false,
+        lock: noOpLock,
       },
     })
   : null;

@@ -4,6 +4,10 @@ import { ImageWithFallback } from '../components/figma/ImageWithFallback';
 import { useLanguage } from '../context/LanguageContext';
 import { useSiteContent } from '../context/SiteContentContext';
 
+function formatDisplayUrl(url: string) {
+  return url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+}
+
 export function CaseStudies() {
   const { language } = useLanguage();
   const isRTL = language === 'he';
@@ -49,7 +53,9 @@ export function CaseStudies() {
                   <p className="text-gray-600 mb-4 leading-relaxed">{isRTL ? project.descriptionHe : project.descriptionEn}</p>
                   <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-5 py-3 rounded-2xl">
                     <TrendingUp className="w-6 h-6 text-green-600" />
-                    <span className="font-bold text-lg break-all">{project.liveUrl || (isRTL ? project.resultHe : project.resultEn)}</span>
+                    <span className="font-bold text-lg break-all">
+                      {project.liveUrl ? formatDisplayUrl(project.liveUrl) : isRTL ? project.resultHe : project.resultEn}
+                    </span>
                   </div>
                 </div>
               </Link>
