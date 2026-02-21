@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router';
+import { createBrowserRouter, redirect } from 'react-router';
 import { Root } from './Root';
 import { Home } from './pages/Home';
 import { CaseStudies } from './pages/CaseStudies';
@@ -30,6 +30,7 @@ export const router = createBrowserRouter(
         { path: 'faq', Component: FAQ },
         { path: 'insights', Component: Insights },
         { path: 'insights/:slug', Component: InsightDetail },
+        { path: 'results', loader: () => redirect('/projects') },
       ],
     },
     { path: '/admin', Component: Admin },
