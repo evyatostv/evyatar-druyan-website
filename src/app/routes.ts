@@ -10,7 +10,6 @@ import { Contact } from './pages/Contact';
 import { FAQ } from './pages/FAQ';
 import { Insights } from './pages/Insights';
 import { InsightDetail } from './pages/InsightDetail';
-import { Results } from './pages/Results';
 import { Admin } from './pages/Admin';
 
 export const router = createBrowserRouter(
@@ -31,7 +30,6 @@ export const router = createBrowserRouter(
         { path: 'faq', Component: FAQ },
         { path: 'insights', Component: Insights },
         { path: 'insights/:slug', Component: InsightDetail },
-        { path: 'results', Component: Results },
       ],
     },
     { path: '/admin', Component: Admin },

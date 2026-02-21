@@ -133,14 +133,6 @@ export function Navigation() {
                     >
                       {t('allProjects')}
                     </Link>
-                    <div className="border-t border-gray-100 my-2" />
-                    <Link
-                      to="/results"
-                      onClick={closeMenus}
-                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors"
-                    >
-                      {t('results')}
-                    </Link>
                   </div>
                 </div>
               )}
@@ -244,9 +236,6 @@ export function Navigation() {
                 <div className={`flex flex-col gap-1 ${isRTL ? 'pr-4' : 'pl-4'}`}>
                   <Link to="/projects" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                     {t('allProjects')}
-                  </Link>
-                  <Link to="/results" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
-                    {t('results')}
                   </Link>
                 </div>
               )}
