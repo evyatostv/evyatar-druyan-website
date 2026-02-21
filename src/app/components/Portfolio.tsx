@@ -21,9 +21,9 @@ export function Portfolio() {
       cta: 'לכל הפרוייקטים',
     },
     en: {
-      title: 'Case Studies with Measurable Impact',
+      title: 'Top Projects with Measurable Impact',
       subtitle: 'Real projects that improved growth, sales, and lead quality',
-      cta: 'View All Case Studies',
+      cta: 'View Top Projects',
     },
   }[language];
 
