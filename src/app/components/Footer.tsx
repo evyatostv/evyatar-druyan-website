@@ -31,7 +31,7 @@ export function Footer() {
               <li><Link to="/services/website-design" className="hover:text-white transition-colors">{t('websiteDesign')}</Link></li>
               <li><Link to="/services/paid-advertising" className="hover:text-white transition-colors">{t('paidAdvertising')}</Link></li>
               <li><Link to="/services/full-package" className="hover:text-white transition-colors">{t('fullPackage')}</Link></li>
-              <li><Link to="/case-studies" className="hover:text-white transition-colors">{t('caseStudies')}</Link></li>
+              <li><Link to="/projects" className="hover:text-white transition-colors">{t('caseStudies')}</Link></li>
             </ul>
           </div>
 

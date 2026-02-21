@@ -52,11 +52,12 @@ export function Portfolio() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               </div>
               <div className="p-6 sm:p-8 flex flex-col flex-1">
-                <div className="inline-block text-xs sm:text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
+                <div className="w-fit self-start text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-4">
                   {isRTL ? project.categoryHe : project.categoryEn}
                 </div>
                 <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">{isRTL ? project.titleHe : project.titleEn}</h3>
-                <div className="mt-auto flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-4 sm:px-5 py-3 rounded-2xl">
+                <div className="flex-1" />
+                <div className="flex items-center gap-3 text-gray-700 bg-gradient-to-l from-green-50 to-emerald-50 px-4 sm:px-5 py-3 rounded-2xl">
                   <Globe className="w-5 h-5 sm:w-6 sm:h-6 text-green-600" />
                   <span className="font-bold text-base sm:text-lg break-all">
                     {project.liveUrl ? formatDisplayUrl(project.liveUrl) : isRTL ? project.resultHe : project.resultEn}
@@ -69,7 +70,7 @@ export function Portfolio() {
 
         <div className="text-center">
           <Link
-            to="/case-studies"
+            to="/projects"
             className="bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-7 sm:px-10 py-4 sm:py-5 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 shadow-lg shadow-blue-600/25 hover:shadow-xl inline-flex items-center gap-3"
           >
             <ArrowLeft className="w-5 h-5" />

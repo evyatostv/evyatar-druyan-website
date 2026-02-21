@@ -115,7 +115,7 @@ export function Navigation() {
                   setServicesOpen(false);
                 }}
                 className={`font-semibold transition-colors flex items-center gap-1 ${
-                  location.pathname.startsWith('/case-studies')
+                  location.pathname.startsWith('/projects') || location.pathname.startsWith('/case-studies')
                     ? 'text-blue-600'
                     : 'text-gray-700 hover:text-blue-600'
                 }`}
@@ -127,7 +127,7 @@ export function Navigation() {
                 <div className={`absolute top-full pt-2 w-56 ${isRTL ? 'left-0' : 'right-0'}`}>
                   <div className="bg-white rounded-2xl shadow-xl border border-gray-200 py-3">
                     <Link
-                      to="/case-studies"
+                      to="/projects"
                       onClick={closeMenus}
                       className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors font-semibold"
                     >
@@ -242,7 +242,7 @@ export function Navigation() {
               </button>
               {caseStudiesOpen && (
                 <div className={`flex flex-col gap-1 ${isRTL ? 'pr-4' : 'pl-4'}`}>
-                  <Link to="/case-studies" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                  <Link to="/projects" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                     {t('allProjects')}
                   </Link>
                   <Link to="/results" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">

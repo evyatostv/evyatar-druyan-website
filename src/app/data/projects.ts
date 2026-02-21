@@ -20,7 +20,7 @@ export const defaultProjectsFromCsv: DefaultProjectItem[] = [
     titleHe: 'האתר של ד"ר עמית',
     liveUrl: 'https://amitdr.com',
     categoryEn: 'Website Design',
-    categoryHe: 'עיצוב אתרים',
+    categoryHe: 'עיצוב אתר',
     resultEn: 'Live Website',
     resultHe: 'אתר חי באוויר',
     descriptionEn:
@@ -65,7 +65,7 @@ export const defaultProjectsFromCsv: DefaultProjectItem[] = [
     titleHe: 'האתר של נטע זנטנר',
     liveUrl: 'https://www.nettazentner.com',
     categoryEn: 'Website Design',
-    categoryHe: 'עיצוב אתרים',
+    categoryHe: 'עיצוב אתר',
     resultEn: 'Live Website',
     resultHe: 'אתר חי באוויר',
     descriptionEn:
@@ -80,7 +80,7 @@ export const defaultProjectsFromCsv: DefaultProjectItem[] = [
     titleHe: 'האתר של יוכי אנגליסטר',
     liveUrl: 'https://anglistery.wixsite.com/website-54',
     categoryEn: 'Website Design',
-    categoryHe: 'עיצוב אתרים',
+    categoryHe: 'עיצוב אתר',
     resultEn: 'Live Website',
     resultHe: 'אתר חי באוויר',
     descriptionEn:

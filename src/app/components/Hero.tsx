@@ -48,7 +48,7 @@ export function Hero() {
                 <ArrowLeft className="h-5 w-5" />
                 {isRTL ? 'בואו נבנה משהו מיוחד' : "Let's Build Something Special"}
               </Link>
-              <Link to="/case-studies" className="hero-btn hero-btn-secondary">
+              <Link to="/projects" className="hero-btn hero-btn-secondary">
                 <Eye className="h-5 w-5" />
                 {isRTL ? 'צפו בעבודות האחרונות' : 'See Recent Work'}
               </Link>
