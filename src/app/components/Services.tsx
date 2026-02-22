@@ -17,7 +17,7 @@ export function Services() {
           title: 'עיצוב ופיתוח אתרים',
           description:
             'אתרי תדמית, חנויות ודפי נחיתה שבנויים לביצועים: מהירים, נגישים וממוקדי המרה.',
-          benefits: ['עיצוב רספונסיבי מלא', 'מבנה SEO נקי', 'חוויית משתמש מדויקת', 'ביצועים גבוהים'],
+          benefits: ['עיצוב רספונסיבי מלא', 'מבנה SEO נקי', 'חוויית משתמש מדוייקת', 'ביצועים גבוהים'],
           gradient: 'from-blue-50/50 to-blue-100/30',
           borderColor: 'border-blue-200/50',
           path: '/services/website-design',
@@ -27,7 +27,7 @@ export function Services() {
           title: 'פרסום ממומן',
           description:
             'ניהול קמפיינים ב-Meta, Google ו-TikTok עם שליטה בתקציב, שיפור מתמשך ותשואה מדידה.',
-          benefits: ['אסטרטגיית קמפיין', 'קריאייטיב ובדיקות', 'פילוח קהלים מדויק', 'דוחות ברורים'],
+          benefits: ['אסטרטגיית קמפיין', 'קריאייטיב ובדיקות', 'פילוח קהלים מדוייק', 'דוחות ברורים'],
           gradient: 'from-teal-50/50 to-teal-100/30',
           borderColor: 'border-teal-200/50',
           path: '/services/paid-advertising',
@@ -102,7 +102,7 @@ export function Services() {
               <div className="absolute inset-0 bg-gradient-to-br from-white/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
 
               <div className="relative z-10 h-full flex flex-col">
-                <div className="mb-5 inline-block p-3 bg-white/80 rounded-2xl shadow-sm">{service.icon}</div>
+                <div className="mb-5 inline-flex">{service.icon}</div>
                 <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4">{service.title}</h3>
                 <p className="text-gray-600 mb-6 leading-relaxed text-base sm:text-lg">{service.description}</p>
                 <ul className="space-y-2.5 mb-8 flex-1">

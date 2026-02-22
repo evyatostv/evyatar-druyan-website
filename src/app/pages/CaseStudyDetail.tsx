@@ -51,17 +51,8 @@ export function CaseStudyDetail() {
               to="/projects"
               className="inline-flex items-center gap-1.5 text-blue-700 hover:text-blue-900 transition-colors text-sm font-medium"
             >
-              {isRTL ? (
-                <>
-                  {copy.back}
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </>
-              ) : (
-                <>
-                  <ArrowRight className="w-3.5 h-3.5 rotate-180" />
-                  {copy.back}
-                </>
-              )}
+              <ArrowRight className={`w-3.5 h-3.5 ${isRTL ? '' : 'rotate-180'}`} />
+              {copy.back}
             </Link>
           </div>
 

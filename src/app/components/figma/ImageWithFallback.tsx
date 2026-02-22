@@ -11,6 +11,8 @@ export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElemen
   }
 
   const { src, alt, style, className, ...rest } = props
+  const loading = rest.loading ?? 'lazy'
+  const decoding = rest.decoding ?? 'async'
   const resolvedSrc =
     typeof src === 'string' && src.startsWith('/')
       ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}${src}`
@@ -22,10 +24,10 @@ export function ImageWithFallback(props: React.ImgHTMLAttributes<HTMLImageElemen
       style={style}
     >
       <div className="flex items-center justify-center w-full h-full">
-        <img src={ERROR_IMG_SRC} alt="Error loading image" {...rest} data-original-url={src} />
+        <img src={ERROR_IMG_SRC} alt="Error loading image" {...rest} loading={loading} decoding={decoding} data-original-url={src} />
       </div>
     </div>
   ) : (
-    <img src={resolvedSrc} alt={alt} className={className} style={style} {...rest} onError={handleError} />
+    <img src={resolvedSrc} alt={alt} className={className} style={style} {...rest} loading={loading} decoding={decoding} onError={handleError} />
   )
 }
