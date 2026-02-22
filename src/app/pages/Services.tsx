@@ -258,8 +258,8 @@ export function ServiceDetail() {
             >
               {isRTL ? (
                 <>
-                  <ArrowLeft className="w-5 h-5" />
                   בקש הצעה מותאמת
+                  <ArrowLeft className="w-5 h-5" />
                 </>
               ) : (
                 <>

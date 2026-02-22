@@ -25,8 +25,17 @@ export function InsightDetail() {
       <section className="py-20">
         <div className="container mx-auto px-4 sm:px-6 max-w-4xl" dir={isRTL ? 'rtl' : 'ltr'}>
           <Link to="/insights" className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold mb-8">
-            <ArrowLeft className="w-4 h-4" />
-            {t('backToInsights')}
+            {isRTL ? (
+              <>
+                {t('backToInsights')}
+                <ArrowLeft className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                <ArrowLeft className="w-4 h-4" />
+                {t('backToInsights')}
+              </>
+            )}
           </Link>
 
           <div className="inline-block text-sm bg-gradient-to-l from-blue-600 to-teal-600 text-white px-4 py-1.5 rounded-full font-semibold mb-5">

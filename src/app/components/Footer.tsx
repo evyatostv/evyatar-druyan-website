@@ -19,8 +19,13 @@ export function Footer() {
                 <Mail className="w-5 h-5" />
                 {content.siteInfo.email}
               </a>
-              <a href={`tel:${content.siteInfo.phone.replace(/[^+\d]/g, '')}`} className="hover:text-white transition-colors text-base sm:text-lg block">
-                {content.siteInfo.phone}
+              <a
+                href={`https://wa.me/${content.siteInfo.whatsappNumber || '972535532893'}`}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white transition-colors text-base sm:text-lg block"
+              >
+                {isRTL ? 'שלחו לנו הודעה בוואטסאפ' : 'Message us on WhatsApp'}
               </a>
             </div>
           </div>

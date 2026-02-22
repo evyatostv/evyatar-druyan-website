@@ -45,8 +45,17 @@ export function Hero() {
 
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
               <Link to="/contact" className="hero-btn hero-btn-primary">
-                <ArrowLeft className="h-5 w-5" />
-                {isRTL ? 'בואו נבנה משהו מיוחד' : "Let's Build Something Special"}
+                {isRTL ? (
+                  <>
+                    בואו נבנה משהו מיוחד
+                    <ArrowLeft className="h-5 w-5" />
+                  </>
+                ) : (
+                  <>
+                    <ArrowLeft className="h-5 w-5" />
+                    Let's Build Something Special
+                  </>
+                )}
               </Link>
               <Link to="/projects" className="hero-btn hero-btn-secondary">
                 <Eye className="h-5 w-5" />

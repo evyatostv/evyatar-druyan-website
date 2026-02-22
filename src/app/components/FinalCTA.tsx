@@ -42,8 +42,17 @@ export function FinalCTA() {
             to="/contact"
             className="group bg-white text-blue-700 hover:bg-blue-50 px-7 sm:px-10 py-4 sm:py-5 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 shadow-xl flex items-center gap-3"
           >
-            <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-            {copy.ctaPrimary}
+            {isRTL ? (
+              <>
+                {copy.ctaPrimary}
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+              </>
+            ) : (
+              <>
+                <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                {copy.ctaPrimary}
+              </>
+            )}
           </Link>
           <a
             href={`mailto:${content.siteInfo.email}`}

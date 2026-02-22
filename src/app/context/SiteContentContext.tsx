@@ -151,7 +151,7 @@ const defaultContent: SiteContent = {
     brandHe: 'דרוין עיצובים',
     brandEn: 'Druyan Design',
     email: 'contact@drd.co.il',
-    phone: '+972 53 553 2893',
+    phone: '0535532893',
     locationHe: 'תל אביב, ישראל',
     locationEn: 'Tel Aviv, Israel',
     whatsappNumber: '972535532893',
@@ -345,6 +345,15 @@ function normalizeContent(content: SiteContent): SiteContent {
     !migrated.siteInfo?.email || migrated.siteInfo.email === 'hello@yoursite.com'
       ? 'contact@drd.co.il'
       : migrated.siteInfo.email;
+  const normalizedPhoneRaw = (migrated.siteInfo?.phone || '').replace(/[^\d]/g, '');
+  const normalizedPhone =
+    !migrated.siteInfo?.phone ||
+    normalizedPhoneRaw === '972535532893' ||
+    normalizedPhoneRaw === '0535532893' ||
+    normalizedPhoneRaw === '972501234567' ||
+    normalizedPhoneRaw === '0501234567'
+      ? '0535532893'
+      : migrated.siteInfo.phone;
 
   return {
     ...migrated,
@@ -352,6 +361,7 @@ function normalizeContent(content: SiteContent): SiteContent {
     siteInfo: {
       ...migrated.siteInfo,
       email: normalizedEmail,
+      phone: normalizedPhone,
     },
     leads: (migrated.leads || []).map((lead) => ({
       ...lead,

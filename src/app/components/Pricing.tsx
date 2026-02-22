@@ -174,8 +174,17 @@ export function Pricing() {
                       : 'bg-gradient-to-l from-gray-900 to-gray-800 text-white hover:from-gray-800 hover:to-gray-700 shadow-lg'
                   }`}
                 >
-                  <ArrowLeft className="w-5 h-5" />
-                  {pkg.cta}
+                  {isRTL ? (
+                    <>
+                      {pkg.cta}
+                      <ArrowLeft className="w-5 h-5" />
+                    </>
+                  ) : (
+                    <>
+                      <ArrowLeft className="w-5 h-5" />
+                      {pkg.cta}
+                    </>
+                  )}
                 </Link>
               </div>
             </div>

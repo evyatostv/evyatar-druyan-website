@@ -13,12 +13,13 @@ export function Portfolio() {
   const isRTL = language === 'he';
   const { content } = useSiteContent();
   const projects = content.projects;
+  const featuredProjects = projects.slice(0, 3);
 
   const copy = {
     he: {
       title: 'פרוייקטים עם תוצאה מדידה',
       subtitle: 'פרויקטים אמיתיים שהשפיעו על צמיחה, מכירות ולידים',
-      cta: 'לכל הפרוייקטים',
+      cta: 'לפרוייקטים',
     },
     en: {
       title: 'Top Projects with Measurable Impact',
@@ -38,7 +39,7 @@ export function Portfolio() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8 mb-12 sm:mb-14">
-          {projects.map((project) => (
+          {featuredProjects.map((project) => (
             <div
               key={project.id}
               className="group bg-white rounded-3xl overflow-hidden shadow-md hover:shadow-2xl transition-all duration-500 flex flex-col h-full"
@@ -73,8 +74,8 @@ export function Portfolio() {
             to="/projects"
             className="bg-gradient-to-l from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-7 sm:px-10 py-4 sm:py-5 rounded-full font-semibold text-base sm:text-lg transition-all duration-300 shadow-lg shadow-blue-600/25 hover:shadow-xl inline-flex items-center gap-3"
           >
+            <span>{copy.cta}</span>
             <ArrowLeft className="w-5 h-5" />
-            {copy.cta}
           </Link>
         </div>
       </div>

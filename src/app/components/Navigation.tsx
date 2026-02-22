@@ -7,14 +7,12 @@ export function Navigation() {
   const { language, setLanguage, t } = useLanguage();
   const location = useLocation();
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [caseStudiesOpen, setCaseStudiesOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const isRTL = language === 'he';
 
   const isActive = (path: string) => location.pathname === path;
   const closeMenus = () => {
     setServicesOpen(false);
-    setCaseStudiesOpen(false);
     setMobileMenuOpen(false);
   };
 
@@ -54,14 +52,12 @@ export function Navigation() {
               className="relative"
               onMouseEnter={() => {
                 setServicesOpen(true);
-                setCaseStudiesOpen(false);
               }}
               onMouseLeave={() => setServicesOpen(false)}
             >
               <button
                 onClick={() => {
                   setServicesOpen((prev) => !prev);
-                  setCaseStudiesOpen(false);
                 }}
                 className={`font-semibold transition-colors flex items-center gap-1 ${
                   location.pathname.startsWith('/services')
@@ -101,42 +97,17 @@ export function Navigation() {
               )}
             </div>
 
-            <div
-              className="relative"
-              onMouseEnter={() => {
-                setCaseStudiesOpen(true);
-                setServicesOpen(false);
-              }}
-              onMouseLeave={() => setCaseStudiesOpen(false)}
+            <Link
+              to="/projects"
+              onClick={closeMenus}
+              className={`font-semibold transition-colors ${
+                location.pathname.startsWith('/projects') || location.pathname.startsWith('/case-studies')
+                  ? 'text-blue-600'
+                  : 'text-gray-700 hover:text-blue-600'
+              }`}
             >
-              <button
-                onClick={() => {
-                  setCaseStudiesOpen((prev) => !prev);
-                  setServicesOpen(false);
-                }}
-                className={`font-semibold transition-colors flex items-center gap-1 ${
-                  location.pathname.startsWith('/projects') || location.pathname.startsWith('/case-studies')
-                    ? 'text-blue-600'
-                    : 'text-gray-700 hover:text-blue-600'
-                }`}
-              >
-                {t('caseStudies')}
-                <ChevronDown className="w-4 h-4" />
-              </button>
-              {caseStudiesOpen && (
-                <div className={`absolute top-full pt-2 w-56 ${isRTL ? 'left-0' : 'right-0'}`}>
-                  <div className="bg-white rounded-2xl shadow-xl border border-gray-200 py-3">
-                    <Link
-                      to="/projects"
-                      onClick={closeMenus}
-                      className="block px-6 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors font-semibold"
-                    >
-                      {t('allProjects')}
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
+              {t('caseStudies')}
+            </Link>
 
             <Link
               to="/pricing"
@@ -225,20 +196,9 @@ export function Navigation() {
                 </div>
               )}
 
-              <button
-                onClick={() => setCaseStudiesOpen((prev) => !prev)}
-                className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 flex items-center justify-between"
-              >
-                <span>{t('caseStudies')}</span>
-                <ChevronDown className={`w-4 h-4 transition-transform ${caseStudiesOpen ? 'rotate-180' : ''}`} />
-              </button>
-              {caseStudiesOpen && (
-                <div className={`flex flex-col gap-1 ${isRTL ? 'pr-4' : 'pl-4'}`}>
-                  <Link to="/projects" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
-                    {t('allProjects')}
-                  </Link>
-                </div>
-              )}
+              <Link to="/projects" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                {t('caseStudies')}
+              </Link>
 
               <Link to="/pricing" onClick={closeMenus} className="px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                 {t('pricing')}

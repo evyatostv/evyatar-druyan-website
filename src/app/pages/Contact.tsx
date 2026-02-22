@@ -180,8 +180,8 @@ export function Contact() {
                 >
                   {isRTL ? (
                     <>
-                      <ArrowLeft className="w-5 h-5" />
                       שלח בקשה
+                      <ArrowLeft className="w-5 h-5" />
                     </>
                   ) : (
                     <>
@@ -226,9 +226,14 @@ export function Contact() {
                       <Phone className="w-6 h-6" />
                     </div>
                     <div>
-                      <div className="font-semibold mb-1">{isRTL ? 'טלפון' : 'Phone'}</div>
-                      <a href={`tel:${content.siteInfo.phone.replace(/[^+\d]/g, '')}`} className="text-blue-100 hover:text-white">
-                        {content.siteInfo.phone}
+                      <div className="font-semibold mb-1">{isRTL ? 'שלחו לנו הודעה בוואטסאפ' : 'Message us on WhatsApp'}</div>
+                      <a
+                        href={`https://wa.me/${content.siteInfo.whatsappNumber || '972535532893'}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-100 hover:text-white"
+                      >
+                        {isRTL ? 'שלחו לנו הודעה בוואטסאפ' : 'Message us on WhatsApp'}
                       </a>
                     </div>
                   </div>
