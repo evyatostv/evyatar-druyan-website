@@ -24,7 +24,7 @@ export function CaseStudies() {
             </h1>
             <p className="text-2xl text-gray-500 max-w-3xl mx-auto font-light">
               {isRTL
-                ? 'פרויקטים אמיתיים עם תוצאות מדידות והשפעה עסקית מוכחת'
+                ? 'פרויקטים עם תוצאות מדידות והשפעה עסקית מוכחת'
                 : 'Real projects with measurable results and proven business impact'}
             </p>
           </div>

@@ -22,7 +22,7 @@ export function Process() {
           icon: <Palette className="w-7 h-7" />,
           number: '02',
           title: 'עיצוב ופיתוח',
-          description: 'מתרגמים את האסטרטגיה למסכים, חוויית משתמש ותשתית טכנית מהירה ומדויקת.',
+          description: 'מתרגמים את האסטרטגיה למסכים, חוויית משתמש ותשתית טכנית מהירה ומדוייקת.',
         },
         {
           icon: <Rocket className="w-7 h-7" />,
