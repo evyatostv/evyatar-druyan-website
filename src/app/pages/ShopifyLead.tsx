@@ -15,7 +15,6 @@ export function ShopifyLead() {
   const [editing, setEditing] = useState(false);
   const [servicePicker, setServicePicker] = useState(false);
   const [privacyOpen, setPrivacyOpen] = useState(false);
-  const [consent, setConsent] = useState(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle');
   const [error, setError] = useState('');
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -56,7 +55,7 @@ export function ShopifyLead() {
     requestVersion.current += 1;
     sendingRef.current = false;
     setAnswers(prev => ({ ...prev, stage: '', need: '' }));
-    setStep(0); setError(''); setStatus('idle'); setConsent(false); setEditing(false);
+    setStep(0); setError(''); setStatus('idle'); setEditing(false);
     idRef.current = crypto.randomUUID();
   }, [service]);
 
@@ -88,7 +87,6 @@ export function ShopifyLead() {
     if (sendingRef.current || success) return;
     const invalidStep = questions.findIndex(q => validateAnswer(q, answers));
     if (invalidStep >= 0) { setEditing(true); setStep(invalidStep); setError(validateAnswer(questions[invalidStep], answers)); return; }
-    if (!consent) { setError('כדי לשלוח את הפנייה, אשרו שנוכל לחזור אליכם לגבי הפרטים שמילאתם.'); requestAnimationFrame(() => errorRef.current?.focus()); return; }
     sendingRef.current = true;
     const version = ++requestVersion.current;
     const isCurrentRequest = () => mountedRef.current && requestVersion.current === version && currentService.current === service;
@@ -132,20 +130,19 @@ export function ShopifyLead() {
           <div className="sl-success-icon"><CheckCircle2 size={42} aria-hidden="true" /></div>
           <p className="sl-kicker">הפרטים הגיעו</p>
           <h1 id="sl-heading" ref={headingRef} tabIndex={-1}>תודה, {answers.name.trim().split(' ')[0]}.</h1>
-          <p className="sl-intro">הפנייה נשמרה. אביתר יעבור על הפרטים ויחזור אליכם בערוץ שבחרתם כדי לבדוק התאמה ולתאם שיחה.</p>
+          <p className="sl-intro">הפנייה התקבלה. נחזור אליכם בערוץ שבחרתם להמשך השיחה.</p>
           <p className="sl-success-contact"><span>{answers.contactMethod === 'phone' ? 'טלפון / WhatsApp' : 'אימייל'}</span><bdi>{answers.contact}</bdi></p>
           <p className="sl-small">מספר הפנייה: <bdi>{idRef.current.slice(0, 8)}</bdi></p>
         </section> : review ? <form onSubmit={send} className="sl-step sl-review" noValidate aria-labelledby="sl-heading" aria-busy={status === 'sending'}>
           <p className="sl-kicker">לפני ששולחים</p>
           <h1 id="sl-heading" ref={headingRef} tabIndex={-1}>הכול נראה נכון?</h1>
-          <p className="sl-intro">כך אביתר יוכל להגיע לשיחה עם תמונה ברורה של העסק.</p>
+          <p className="sl-intro">רגע לפני השליחה, אפשר לעבור על הפרטים ולעדכן במידת הצורך.</p>
           <dl className="sl-review-list">{questions.map((q,index) => <div key={q.key}>
             <div><dt>{q.key === 'contact' ? (answers.contactMethod === 'phone' ? 'טלפון / WhatsApp' : 'אימייל') : q.title}</dt><dd dir={q.key === 'website' || q.key === 'contact' ? 'auto' : undefined}>{answers[q.key].trim() || 'לא נמסר'}</dd></div>
             <button type="button" className="sl-edit" aria-label={`עריכת ${q.title}`} disabled={status === 'sending'} onClick={() => { setEditing(true); setStep(index); setError(''); }}><Pencil size={16} aria-hidden="true" /><span>עריכה</span></button>
           </div>)}</dl>
-          <label className="sl-consent"><input type="checkbox" checked={consent} disabled={status === 'sending'} onChange={e => { setConsent(e.target.checked); setError(''); }} /><span>אפשר להעביר את הפרטים לאביתר דרוין ולחזור אליי לגבי הפנייה הזאת.</span></label>
           {error && <p className="sl-error" id="sl-error" role="alert" tabIndex={-1} ref={errorRef}>{error}</p>}
-          <div className="sl-actions"><button className="sl-primary" type="submit" disabled={status === 'sending'}>{status === 'sending' ? <><LoaderCircle className="sl-spinner" size={20} aria-hidden="true" />שולחים את הפרטים…</> : <>שליחת הפרטים לאביתר<ArrowLeft size={20} aria-hidden="true" /></>}</button></div>
+          <div className="sl-actions"><button className="sl-primary" type="submit" disabled={status === 'sending'}>{status === 'sending' ? <><LoaderCircle className="sl-spinner" size={20} aria-hidden="true" />שולחים את הפרטים…</> : <>שליחת הפרטים<ArrowLeft size={20} aria-hidden="true" /></>}</button></div>
           {status === 'error' && <a className="sl-fallback" href={whatsappFallback(service, answers)} target="_blank" rel="noreferrer"><MessageCircle size={18} aria-hidden="true" />פתיחת הפנייה ב־WhatsApp<span>ההודעה תיפתח לבדיקה ולשליחה שלכם</span></a>}
           <p className="sl-small">השארת הפרטים אינה התחייבות. היקף העבודה והמחיר ייקבעו לאחר השיחה.</p>
         </form> : <form onSubmit={next} className="sl-step" noValidate aria-labelledby="sl-heading" key={`${service}-${step}`}>
@@ -181,7 +178,7 @@ export function ShopifyLead() {
         </form>}
 
         <footer className="sl-footer"><button type="button" onClick={() => setPrivacyOpen(!privacyOpen)} aria-expanded={privacyOpen} aria-controls="sl-privacy"><ShieldCheck size={16} aria-hidden="true" />מה קורה עם הפרטים שלי?</button>
-          {privacyOpen && <div id="sl-privacy" className="sl-privacy">הפרטים נשלחים לאביתר דרוין כדי לבדוק את הפנייה וליצור איתכם קשר. הם נשמרים במערכת הלידים של העסק ולא מצורפים לרשימת דיוור. התשובות נשארות בדף עד השליחה; סגירה או רענון ימחקו טיוטה שלא נשלחה. לבירור או לבקשת מחיקה: <a href="mailto:contact@drd.co.il">contact@drd.co.il</a>.</div>}
+          {privacyOpen && <div id="sl-privacy" className="sl-privacy">הפרטים משמשים לבדיקת הפנייה וליצירת קשר. הם נשמרים במערכת הלידים של העסק ולא מצורפים לרשימת דיוור. התשובות נשארות בדף עד השליחה; סגירה או רענון ימחקו טיוטה שלא נשלחה. לבירור או לבקשת מחיקה: <a href="mailto:contact@drd.co.il">contact@drd.co.il</a>.</div>}
         </footer>
       </div>
     </main>
