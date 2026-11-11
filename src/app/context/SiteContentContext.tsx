@@ -470,8 +470,7 @@ async function loadRemoteLeads(): Promise<LeadItem[] | null> {
   ];
 
   let lastError: unknown = null;
-  let data:
-    | Array<{
+  type RemoteLeadRow = {
         id: string;
         full_name?: string | null;
         phone?: string | null;
@@ -483,13 +482,13 @@ async function loadRemoteLeads(): Promise<LeadItem[] | null> {
         website?: string | null;
         message?: string | null;
         created_at?: string | null;
-      }>
-    | null = null;
+      };
+  let data: RemoteLeadRow[] | null = null;
 
   for (const selectClause of selectVariants) {
-    const result = await supabase.from(LEADS_TABLE).select(selectClause).order('created_at', { ascending: false });
+    const result = await supabase.from(LEADS_TABLE).select(selectClause).order('created_at', { ascending: false }).returns<RemoteLeadRow[]>();
     if (!result.error) {
-      data = (result.data || []) as typeof data;
+      data = result.data || [];
       lastError = null;
       break;
     }
@@ -691,6 +690,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!supabase || !isSupabaseConfigured) return;
+    const client = supabase;
     let channel: ReturnType<typeof supabase.channel> | null = null;
     channel = supabase
       .channel('site-content-live')
@@ -716,20 +716,21 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
 
     return () => {
       if (channel) {
-        supabase.removeChannel(channel);
+        client.removeChannel(channel);
       }
     };
   }, []);
 
   useEffect(() => {
     if (!supabase || !isSupabaseConfigured) return;
+    const client = supabase;
     let cancelled = false;
     let channel: ReturnType<typeof supabase.channel> | null = null;
 
     const connectRealtime = async () => {
-      const sessionData = await supabase.auth.getSession();
+      const sessionData = await client.auth.getSession();
       if (!sessionData.data.session?.user || cancelled) return;
-      channel = supabase
+      channel = client
         .channel('leads-realtime-feed')
         .on(
           'postgres_changes',
@@ -754,7 +755,7 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
       if (channel) {
-        supabase.removeChannel(channel);
+        client.removeChannel(channel);
       }
     };
   }, []);

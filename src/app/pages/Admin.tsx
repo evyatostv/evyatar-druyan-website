@@ -432,8 +432,7 @@ export function Admin() {
   };
 
   const openLeadWhatsapp = (lead: LeadItem) => {
-    const preferredNumber = lead.phone?.trim() || content.siteInfo.whatsappNumber;
-    const link = whatsappUrl(preferredNumber, updateLeadMessage(lead));
+    const link = whatsappUrl(lead.phone?.trim() || '', updateLeadMessage(lead));
     if (!link) {
       setSettingsMessage(isRTL ? 'אין מספר טלפון תקין לליד הזה' : 'No valid phone number for this lead');
       return;
@@ -797,7 +796,9 @@ export function Admin() {
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button
                     onClick={() => openLeadWhatsapp(lead)}
-                    className="px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold"
+                    disabled={!normalizeWhatsappNumber(lead.phone || '')}
+                    title={!normalizeWhatsappNumber(lead.phone || '') ? (isRTL ? 'לא נמסר מספר טלפון' : 'No phone number provided') : undefined}
+                    className="px-3 py-2 rounded-lg bg-green-600 text-white text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isRTL ? 'שלח וואטסאפ מהיר' : 'Quick WhatsApp'}
                   </button>
@@ -806,20 +807,22 @@ export function Admin() {
                   </button>
                   <button
                     onClick={() => {
-                      const link = whatsappUrl(lead.phone?.trim() || content.siteInfo.whatsappNumber, updateLeadMessage(lead));
+                      const link = whatsappUrl(lead.phone?.trim() || '', updateLeadMessage(lead));
                       if (!link) {
                         setSettingsMessage(isRTL ? 'אין מספר טלפון תקין לליד הזה' : 'No valid phone number for this lead');
                         return;
                       }
                       copyText(link);
                     }}
-                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold"
+                    disabled={!normalizeWhatsappNumber(lead.phone || '')}
+                    title={!normalizeWhatsappNumber(lead.phone || '') ? (isRTL ? 'לא נמסר מספר טלפון' : 'No phone number provided') : undefined}
+                    className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isRTL ? 'העתק לינק וואטסאפ' : 'Copy WhatsApp Link'}
                   </button>
-                  <a href={`mailto:${lead.email}`} className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold">
+                  {lead.email?.trim() && <a href={`mailto:${encodeURIComponent(lead.email.trim())}`} className="px-3 py-2 rounded-lg border border-gray-300 text-sm font-semibold">
                     {isRTL ? 'שלח אימייל' : 'Send Email'}
-                  </a>
+                  </a>}
                 </div>
               </div>
             ))}

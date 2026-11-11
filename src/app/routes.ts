@@ -11,6 +11,7 @@ import { FAQ } from './pages/FAQ';
 import { Insights } from './pages/Insights';
 import { InsightDetail } from './pages/InsightDetail';
 import { Admin } from './pages/Admin';
+import { ShopifyLead } from './pages/ShopifyLead';
 
 export const router = createBrowserRouter(
   [
@@ -34,6 +35,8 @@ export const router = createBrowserRouter(
       ],
     },
     { path: '/admin', Component: Admin },
+    { path: '/shopify', Component: ShopifyLead },
+    { path: '/shopify/:service', Component: ShopifyLead },
   ],
   { basename: import.meta.env.BASE_URL },
 );

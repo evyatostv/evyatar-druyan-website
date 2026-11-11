@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:shopify": "node scripts/build-shopify.mjs",
+    "test:shopify": "node scripts/test-shopify.mjs",
     "preview": "vite preview",
     "mobile:sync": "npx cap sync ios",
     "mobile:build": "VITE_NATIVE_APP=true npm run build && npx cap sync ios",
@@ -78,6 +80,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react": "4.7.0",
     "tailwindcss": "4.1.12",
     "typescript": "^5.9.3",

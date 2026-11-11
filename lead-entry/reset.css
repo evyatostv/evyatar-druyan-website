@@ -1,0 +1,2 @@
+@font-face{font-family:Heebo;src:url('/shopify/fonts/heebo.woff2') format('woff2');font-style:normal;font-weight:100 900;font-display:swap}
+html,body,#root{margin:0;min-height:100%;min-width:0}body{background:#f5f1e9}button,input,textarea{font:inherit}button{appearance:none}a,button,input,textarea{-webkit-tap-highlight-color:transparent}button:disabled{pointer-events:none}*{box-sizing:border-box}
