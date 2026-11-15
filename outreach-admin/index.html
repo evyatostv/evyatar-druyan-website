@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>DRD Outreach — תור אישורים</title>
+<style>
+  :root { --bg:#f6f5f2; --card:#fff; --ink:#15171a; --mute:#6a6f76; --line:#e3e1db; --accent:#2f5d50; --warn:#b4531a; --bad:#a32424; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:15px/1.55 -apple-system, "Segoe UI", Arial, sans-serif; background:var(--bg); color:var(--ink); }
+  header { display:flex; gap:12px; align-items:center; padding:14px 20px; background:var(--card); border-bottom:1px solid var(--line); position:sticky; top:0; z-index:2; }
+  header h1 { font-size:17px; margin:0; flex:1; }
+  nav button { border:1px solid var(--line); background:var(--card); padding:6px 12px; border-radius:8px; cursor:pointer; font:inherit; }
+  nav button.on { background:var(--accent); color:#fff; border-color:var(--accent); }
+  main { max-width:980px; margin:0 auto; padding:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; margin-bottom:14px; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+  .pill { font-size:12px; padding:2px 9px; border-radius:99px; background:#ecebe5; color:var(--mute); }
+  .pill.good { background:#dcebe5; color:var(--accent); } .pill.warn { background:#f6e4d6; color:var(--warn); } .pill.bad { background:#f3d9d9; color:var(--bad); }
+  pre { white-space:pre-wrap; background:#faf9f6; border:1px solid var(--line); border-radius:8px; padding:12px; font:14px/1.6 inherit; margin:8px 0; }
+  button.act { border:0; border-radius:8px; padding:8px 14px; cursor:pointer; font:inherit; background:var(--accent); color:#fff; }
+  button.act.alt { background:#fff; color:var(--ink); border:1px solid var(--line); } button.act.danger { background:var(--bad); }
+  button:disabled { opacity:.45; cursor:not-allowed; }
+  input { font:inherit; padding:8px 10px; border:1px solid var(--line); border-radius:8px; }
+  .mute { color:var(--mute); font-size:13px; } a { color:var(--accent); }
+  .ev { font-size:14px; margin:4px 0; } .feed div { padding:6px 0; border-bottom:1px solid var(--line); }
+  .notice { background:#fff7e8; border:1px solid #f0d9a8; border-radius:10px; padding:10px 14px; margin-bottom:14px; font-size:14px; }
+  #login { max-width:340px; margin:80px auto; } #login input { width:100%; margin:6px 0; }
+</style>
+</head>
+<body>
+<div id="login" class="card" hidden>
+  <h2 style="margin-top:0">כניסה למנהל</h2>
+  <input id="email" type="email" placeholder="אימייל" autocomplete="username">
+  <input id="pass" type="password" placeholder="סיסמה" autocomplete="current-password">
+  <button class="act" id="go" style="width:100%;margin-top:8px">התחברות</button>
+  <div id="loginErr" class="mute"></div>
+</div>
+<div id="app" hidden>
+  <header>
+    <h1>DRD Outreach</h1>
+    <nav class="row" id="tabs"></nav>
+    <button class="act alt" id="out">יציאה</button>
+  </header>
+  <main id="main"></main>
+</div>
+<script>
+// Public client config (the anon key is public by design; every table is protected by RLS + the admin function).
+const SB = 'https://koovcvgjkscvcatfehnz.supabase.co';
+const ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtvb3Zjdmdqa3NjdmNhdGZlaG56Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzExNTc2NzUsImV4cCI6MjA4NjczMzY3NX0.H1ac8WkG4fQ9k6MSJ0igbcXRdzlp1UZIYWbXCF6F5mM';
+let session = JSON.parse(sessionStorage.getItem('drd_outreach_session') || 'null');
+let tab = 'review';
+
+const $ = (s) => document.querySelector(s);
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === 'class') el.className = v; else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v);
+  }
+  for (const kid of kids.flat()) el.append(kid instanceof Node ? kid : document.createTextNode(kid ?? ''));
+  return el; // text only via text nodes → no HTML injection from scraped data
+};
+const safeUrl = (u) => /^https?:\/\//i.test(u || '') ? u : '#';
+const date = (iso) => iso ? new Date(iso).toLocaleDateString('he-IL') : '';
+
+async function api(path, opts = {}) {
+  const res = await fetch(`${SB}${path}`, { ...opts, headers: { apikey: ANON, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', ...(opts.headers || {}) } });
+  if (res.status === 401) { logout(); throw new Error('פג תוקף ההתחברות'); }
+  const body = await res.json().catch(() => null);
+  if (!res.ok) throw new Error(body?.error || body?.message || res.statusText);
+  return body;
+}
+const rest = (q) => api(`/rest/v1/${q}`);
+const admin = (payload) => api('/functions/v1/outreach-admin', { method: 'POST', body: JSON.stringify(payload) });
+
+async function login() {
+  $('#loginErr').textContent = '';
+  const res = await fetch(`${SB}/auth/v1/token?grant_type=password`, { method: 'POST', headers: { apikey: ANON, 'Content-Type': 'application/json' }, body: JSON.stringify({ email: $('#email').value, password: $('#pass').value }) });
+  const j = await res.json();
+  if (!res.ok) { $('#loginErr').textContent = 'כניסה נכשלה'; return; }
+  session = j; sessionStorage.setItem('drd_outreach_session', JSON.stringify(j)); boot();
+}
+function logout() { sessionStorage.removeItem('drd_outreach_session'); session = null; boot(); }
+
+const TABS = [['review', 'תור אישורים'], ['leads', 'כל הלידים'], ['feed', 'יומן אירועים'], ['suppr', 'הסרות'], ['status', 'מוכנות לשליחה']];
+function renderTabs() {
+  const nav = $('#tabs'); nav.replaceChildren(...TABS.map(([k, label]) => h('button', { class: tab === k ? 'on' : '', onclick: () => { tab = k; render(); } }, label)));
+}
+
+const consentPill = (l) => l.consent?.verifiedAt && !l.consent?.revokedAt ? h('span', { class: 'pill good' }, `הסכמה מאומתת: ${l.consent.basis}`) : h('span', { class: 'pill warn' }, 'אין הסכמה — טיוטה לבדיקה בלבד');
+
+function leadCard(l, actions = true) {
+  const d = l.data || l; const status = l.status;
+  const evidence = (d.findings || []).map((f) => h('div', { class: 'ev' }, `• ${f.kind}: `, h('a', { href: safeUrl(f.evidenceUrl), target: '_blank', rel: 'noopener' }, 'מקור'), ` (${date(f.observedAt)})`, f.quote ? ` — "${f.quote}"` : ''));
+  const card = h('div', { class: 'card' },
+    h('div', { class: 'row' }, h('strong', {}, d.businessName), d.city ? h('span', { class: 'mute' }, d.city) : '', h('span', { class: 'pill' }, d.segment), h('span', { class: 'pill' }, `התאמה ${d.fitScore}`), h('span', { class: 'pill' }, status), consentPill(d)),
+    h('div', { class: 'mute' }, d.website ? h('a', { href: safeUrl(d.website), target: '_blank', rel: 'noopener' }, d.website) : 'אין אתר ידוע — לא נבדק כאין-אתר', ' · ', d.email ? `${d.email} (מקור: ` : 'אין כתובת מייל ציבורית', d.email ? h('a', { href: safeUrl(d.emailSource?.url), target: '_blank', rel: 'noopener' }, d.emailSource?.kind || 'מקור') : '', d.email ? ')' : ''),
+    h('div', {}, evidence.length ? evidence : h('div', { class: 'mute' }, 'אין ממצאים מאומתים')),
+    d.draft ? h('details', {}, h('summary', {}, `טיוטה (${d.draft.kind === 'promotional' ? 'הצעה — לא תישלח ללא הסכמה' : 'בקשת אישור חד-פעמית'})`), h('strong', {}, d.draft.subject), h('pre', {}, d.draft.text)) : '',
+    d.inquiryDraft ? h('details', {}, h('summary', {}, 'בקשת אישור חד-פעמית (ללא תוכן שיווקי)'), h('strong', {}, d.inquiryDraft.subject), h('pre', {}, d.inquiryDraft.text)) : '');
+  if (actions && !['opted_out', 'bounced', 'complained', 'rejected', 'suppressed'].includes(status)) {
+    const row = h('div', { class: 'row' });
+    const run = async (payload, confirmMsg) => { if (confirmMsg && !confirm(confirmMsg)) return; try { await admin(payload); await render(); } catch (e) { alert(e.message); } };
+    if (d.inquiryDraft && d.email) row.append(h('button', { class: 'act', onclick: () => run({ action: 'approve', id: l.id, asInquiry: true }, 'לאשר שליחה חד-פעמית של בקשת האישור? המערכת תבדוק שוב את כל התנאים לפני השליחה.') }, 'אשר בקשת אישור (חד-פעמית)'));
+    if (d.consent?.basis !== 'none' && d.draft?.kind === 'promotional') row.append(h('button', { class: 'act', onclick: () => run({ action: 'approve', id: l.id }) }, 'אשר טיוטה'));
+    row.append(h('button', { class: 'act alt', onclick: () => { const note = prompt('איך טופל? (למשל: שיחת טלפון / וואטסאפ עסקי)'); if (note) run({ action: 'mark_manual', id: l.id, note }); } }, 'טופל ידנית'));
+    row.append(h('button', { class: 'act alt', onclick: () => { const text = prompt('הטקסט המדויק שהם כתבו/אישרו:'); const ref = text && prompt('מקור (מזהה מייל / קישור):'); if (ref) run({ action: 'confirm_consent', id: l.id, consent: { basis: 'opted_in_reply', evidence: { text, sourceRef: ref, capturedAt: new Date().toISOString() } } }, 'לאשר הסכמה בכתב לקבלת פרסומות? הפעולה נרשמת ביומן.') } }, 'אשר הסכמה שהתקבלה'));
+    row.append(h('button', { class: 'act danger', onclick: () => { const reason = prompt('סיבת דחייה:'); if (reason) run({ action: 'reject', id: l.id, reason }); } }, 'דחה'));
+    card.append(row);
+  }
+  return card;
+}
+
+async function render() {
+  renderTabs(); const m = $('#main'); m.replaceChildren(h('div', { class: 'mute' }, 'טוען…'));
+  try {
+    if (tab === 'review') {
+      const rows = await rest('outreach_leads?status=eq.pending_review&select=id,status,data&order=updated_at.desc&limit=100');
+      m.replaceChildren(h('div', { class: 'notice' }, 'ליד קר לעולם לא מקבל הצעה שיווקית אוטומטית. כאן אפשר לאשר רק בקשת אישור חד-פעמית (אם נחתם אישור משפטי), או לטפל בליד בערוץ אחר.'), ...(rows.length ? rows.map((r) => leadCard(r)) : [h('div', { class: 'mute' }, 'אין פריטים ממתינים.')]));
+    } else if (tab === 'leads') {
+      const rows = await rest('outreach_leads?select=id,status,data&order=updated_at.desc&limit=200');
+      m.replaceChildren(...rows.map((r) => leadCard(r)));
+    } else if (tab === 'feed') {
+      const ev = await rest('outreach_events?select=*&order=at.desc&limit=150');
+      m.replaceChildren(h('div', { class: 'card feed' }, ev.map((e) => h('div', {}, h('span', { class: 'pill' }, e.type), ' ', e.summary, ' ', h('span', { class: 'mute' }, new Date(e.at).toLocaleString('he-IL'))))));
+    } else if (tab === 'suppr') {
+      const s = await rest('outreach_suppressions?select=*&order=at.desc&limit=200');
+      const addIn = h('input', { placeholder: 'כתובת מייל להסרה ידנית' });
+      m.replaceChildren(h('div', { class: 'card' }, h('div', { class: 'row' }, addIn, h('button', { class: 'act', onclick: async () => { if (addIn.value) { await admin({ action: 'opt_out', email: addIn.value }); render(); } } }, 'הסר'))), h('div', { class: 'card' }, s.map((x) => h('div', { class: 'ev' }, `${x.email || '@' + x.domain} — ${x.reason} (${x.source}, ${date(x.at)})`))));
+    } else {
+      const st = await rest('outreach_state?key=eq.preflight&select=value');
+      const p = st[0]?.value;
+      const checks = ['domainVerified', 'spf', 'dkim', 'dmarc', 'replyRouting', 'webhookVerified', 'suppressionTested'];
+      m.replaceChildren(h('div', { class: 'card' }, h('strong', {}, 'בדיקות לפני שליחה אמיתית'), p ? checks.map((c) => h('div', { class: 'ev' }, p[c] ? '✅ ' : '⛔ ', c)) : h('div', { class: 'mute' }, 'עדיין לא הורצה בדיקה.'), h('div', { class: 'mute' }, p?.checkedAt ? `נבדק: ${new Date(p.checkedAt).toLocaleString('he-IL')}` : ''), h('button', { class: 'act', onclick: async () => { try { await admin({ action: 'preflight' }); render(); } catch (e) { alert(e.message); } } }, 'הרץ בדיקה עכשיו')));
+    }
+  } catch (e) { m.replaceChildren(h('div', { class: 'notice' }, `שגיאה: ${e.message}`)); }
+}
+
+function boot() {
+  $('#login').hidden = !!session; $('#app').hidden = !session;
+  if (session) render();
+}
+$('#go').addEventListener('click', login); $('#out').addEventListener('click', logout);
+boot();
+</script>
+</body>
+</html>

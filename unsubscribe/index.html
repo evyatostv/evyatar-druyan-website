@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>הסרה מרשימת הפניות — DRD</title>
+<style>
+  body { margin:0; font:17px/1.6 -apple-system, "Segoe UI", Arial, sans-serif; background:#f6f5f2; color:#15171a; display:grid; place-items:center; min-height:100vh; }
+  main { background:#fff; border:1px solid #e3e1db; border-radius:14px; padding:28px; max-width:420px; margin:16px; text-align:center; }
+  button { font:inherit; padding:12px 22px; border:0; border-radius:10px; background:#2f5d50; color:#fff; cursor:pointer; }
+  button:disabled { opacity:.5; }
+  .m { color:#6a6f76; font-size:14px; }
+</style>
+</head>
+<body>
+<main>
+  <h1 style="font-size:21px;margin-top:0">הסרה מרשימת הפניות</h1>
+  <p id="msg">לחצו כדי להפסיק לקבל הודעות מ-DRD. ההסרה מיידית ותקפה לצמיתות.</p>
+  <button id="go">הסירו אותי</button>
+  <p class="m">אפשר גם להשיב למייל שקיבלתם במילה "הסר".</p>
+</main>
+<script>
+  const t = new URLSearchParams(location.search).get('t');
+  const btn = document.getElementById('go'), msg = document.getElementById('msg');
+  if (!t) { btn.disabled = true; msg.textContent = 'הקישור אינו תקין. אפשר להשיב למייל שקיבלתם במילה "הסר".'; }
+  btn.addEventListener('click', async () => {
+    btn.disabled = true;
+    try {
+      const r = await fetch('https://koovcvgjkscvcatfehnz.supabase.co/functions/v1/outreach-unsubscribe?t=' + encodeURIComponent(t), { method: 'POST' });
+      const j = await r.json();
+      if (j.ok) { msg.textContent = 'הוסרתם. לא נשלח אליכם דבר נוסף.'; btn.hidden = true; }
+      else { msg.textContent = 'לא הצלחנו לעבד את הבקשה. אפשר להשיב למייל במילה "הסר" ונטפל בה ידנית.'; btn.disabled = false; }
+    } catch { msg.textContent = 'שגיאת רשת. נסו שוב, או השיבו למייל במילה "הסר".'; btn.disabled = false; }
+  });
+</script>
+</body>
+</html>
