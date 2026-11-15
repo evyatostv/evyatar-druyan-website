@@ -1,0 +1,757 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DRD — בנייה, שדרוג ותחזוקת חנויות Shopify לעסקים</title>
+    <meta
+      name="description"
+      content="DRD מתמחה בבנייה, שדרוג ותחזוקה חודשית שוטפת של חנויות Shopify בישראל. ביצועים מהירים, חוויית מובייל מוקפדת ושקט טכנולוגי לבעלי חנויות."
+    />
+    <meta name="robots" content="index,follow" />
+    <meta name="theme-color" content="#241b38" />
+
+    <!-- Open Graph / Social Sharing -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="DRD" />
+    <meta property="og:title" content="DRD — בנייה, שדרוג ותחזוקת חנויות Shopify" />
+    <meta
+      property="og:description"
+      content="שירותי פיתוח, שדרוג ותחזוקה שוטפת לחנויות Shopify. שיפור מהירות, חוויית רכישה במובייל וליווי טכני שוטף."
+    />
+    <meta property="og:url" content="https://drd.co.il/outreach/" />
+    <link rel="canonical" href="https://drd.co.il/outreach/" />
+
+    <style>
+      :root {
+        --color-bg: #1c142b;
+        --color-bg-secondary: #241b38;
+        --color-card: #2e2347;
+        --color-card-hover: #372a54;
+        --color-border: #4d3c6d;
+        --color-border-subtle: #3d2f57;
+        --color-gold: #f0d65a;
+        --color-gold-hover: #fae477;
+        --color-gold-dark: #b89c2c;
+        --color-ink-primary: #fffdf8;
+        --color-ink-muted: #d8ccff;
+        --color-ink-dim: #9d8ec2;
+        --radius-sm: 8px;
+        --radius-md: 14px;
+        --radius-lg: 22px;
+        --radius-full: 9999px;
+        --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.35);
+        --shadow-gold: 0 8px 24px rgba(240, 214, 90, 0.25);
+        --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Heebo", "Rubik", Arial, sans-serif;
+      }
+
+      *, *::before, *::after {
+        box-sizing: border-box;
+      }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: clip;
+      }
+
+      body {
+        font-family: var(--font-family);
+        background-color: var(--color-bg);
+        color: var(--color-ink-primary);
+        line-height: 1.6;
+        direction: rtl;
+        text-align: right;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      /* Accessibility */
+      .skip-link {
+        position: absolute;
+        top: -100px;
+        right: 16px;
+        background: var(--color-gold);
+        color: var(--color-bg);
+        padding: 12px 20px;
+        border-radius: var(--radius-sm);
+        font-weight: 700;
+        z-index: 1000;
+        transition: top 0.2s ease;
+      }
+      .skip-link:focus {
+        top: 16px;
+        outline: 3px solid var(--color-ink-primary);
+      }
+
+      :focus-visible {
+        outline: 3px solid var(--color-gold);
+        outline-offset: 4px;
+      }
+
+      /* Container */
+      .container {
+        width: 100%;
+        max-width: 1080px;
+        margin-inline: auto;
+        padding-inline: 20px;
+      }
+
+      /* Header */
+      .site-header {
+        border-bottom: 1px solid var(--color-border-subtle);
+        background: rgba(28, 20, 43, 0.92);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        position: sticky;
+        top: 0;
+        z-index: 50;
+      }
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-block: 16px;
+        gap: 12px;
+      }
+      .brand-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+      .brand-mark {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 42px;
+        height: 42px;
+        background: linear-gradient(135deg, var(--color-gold) 0%, var(--color-gold-dark) 100%);
+        color: var(--color-bg);
+        font-weight: 900;
+        font-size: 19px;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-gold);
+        letter-spacing: -0.04em;
+        flex-shrink: 0;
+      }
+      .brand-info {
+        min-width: 0;
+      }
+      .brand-text {
+        font-size: 19px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--color-ink-primary);
+        line-height: 1.2;
+      }
+      .brand-sub {
+        font-size: 12px;
+        color: var(--color-ink-dim);
+        display: block;
+        margin-top: 1px;
+        white-space: nowrap;
+      }
+
+      .header-cta {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: transparent;
+        color: var(--color-gold);
+        border: 1px solid var(--color-border);
+        padding: 8px 16px;
+        border-radius: var(--radius-full);
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        white-space: nowrap;
+      }
+      .header-cta:hover {
+        background: var(--color-card);
+        border-color: var(--color-gold);
+        color: var(--color-gold-hover);
+      }
+
+      /* Hero */
+      .hero {
+        position: relative;
+        padding-block: 64px 56px;
+        text-align: center;
+        overflow: hidden;
+      }
+      .hero-glow {
+        position: absolute;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 500px;
+        height: 320px;
+        background: radial-gradient(circle, rgba(240, 214, 90, 0.12) 0%, rgba(36, 27, 56, 0) 70%);
+        pointer-events: none;
+        z-index: 0;
+      }
+      .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 760px;
+        margin-inline: auto;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--color-card);
+        border: 1px solid var(--color-border);
+        color: var(--color-gold);
+        padding: 6px 14px;
+        border-radius: var(--radius-full);
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 22px;
+      }
+      .hero-badge-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--color-gold);
+        animation: pulse 2s infinite ease-in-out;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.85); }
+      }
+
+      .hero h1 {
+        font-size: clamp(26px, 4.8vw, 50px);
+        font-weight: 900;
+        line-height: 1.22;
+        letter-spacing: -0.025em;
+        margin: 0 0 18px;
+        overflow-wrap: break-word;
+        word-break: break-word;
+      }
+      .hero h1 .highlight {
+        background: linear-gradient(135deg, var(--color-gold) 0%, #ffe992 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .hero-lead {
+        font-size: clamp(16px, 2.2vw, 20px);
+        color: var(--color-ink-muted);
+        line-height: 1.65;
+        margin: 0 auto 32px;
+        max-width: 640px;
+      }
+
+      /* Primary Button */
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: var(--color-gold);
+        color: var(--color-bg);
+        font-size: 17px;
+        font-weight: 800;
+        padding: 16px 32px;
+        border-radius: var(--radius-full);
+        box-shadow: var(--shadow-gold);
+        transition: all 0.25s ease;
+        border: none;
+        cursor: pointer;
+        min-height: 54px;
+      }
+      .btn-primary:hover {
+        background: var(--color-gold-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 28px rgba(240, 214, 90, 0.35);
+      }
+      .btn-primary:active {
+        transform: translateY(0);
+      }
+      .btn-icon {
+        width: 18px;
+        height: 18px;
+        transition: transform 0.2s ease;
+        flex-shrink: 0;
+      }
+      .btn-primary:hover .btn-icon {
+        transform: translateX(-4px);
+      }
+
+      .hero-note {
+        margin-top: 14px;
+        font-size: 13px;
+        color: var(--color-ink-dim);
+      }
+
+      /* Services Grid */
+      .services-section {
+        padding-block: 56px 64px;
+        border-top: 1px solid var(--color-border-subtle);
+      }
+      .section-heading {
+        text-align: center;
+        margin-bottom: 44px;
+      }
+      .section-kicker {
+        color: var(--color-gold);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+      .section-heading h2 {
+        font-size: clamp(24px, 3.8vw, 36px);
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 0 0 12px;
+      }
+      .section-heading p {
+        font-size: 16px;
+        color: var(--color-ink-muted);
+        max-width: 580px;
+        margin-inline: auto;
+      }
+
+      .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 22px;
+        width: 100%;
+      }
+      .service-card {
+        background: var(--color-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 30px 26px;
+        transition: all 0.25s ease;
+        display: flex;
+        flex-direction: column;
+      }
+      .service-card:hover {
+        background: var(--color-card-hover);
+        border-color: var(--color-gold);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-soft);
+      }
+      .service-icon-wrap {
+        width: 50px;
+        height: 50px;
+        border-radius: var(--radius-md);
+        background: rgba(240, 214, 90, 0.12);
+        border: 1px solid rgba(240, 214, 90, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-gold);
+        margin-bottom: 20px;
+      }
+      .service-card h3 {
+        font-size: 21px;
+        font-weight: 800;
+        margin: 0 0 12px;
+        letter-spacing: -0.01em;
+      }
+      .service-card p {
+        font-size: 15px;
+        line-height: 1.65;
+        color: var(--color-ink-muted);
+        margin: 0 0 20px;
+        flex-grow: 1;
+      }
+      .service-bullets {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: grid;
+        gap: 10px;
+        border-top: 1px solid var(--color-border-subtle);
+        padding-top: 16px;
+      }
+      .service-bullets li {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+        font-size: 14px;
+        color: var(--color-ink-primary);
+      }
+      .check-icon {
+        width: 17px;
+        height: 17px;
+        color: var(--color-gold);
+        flex-shrink: 0;
+        margin-top: 3px;
+      }
+
+      /* Process & Values */
+      .values-section {
+        padding-block: 56px;
+        background: var(--color-bg-secondary);
+        border-block: 1px solid var(--color-border-subtle);
+      }
+      .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 20px;
+        width: 100%;
+      }
+      .value-item {
+        background: rgba(28, 20, 43, 0.55);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-md);
+        padding: 22px;
+      }
+      .value-number {
+        font-size: 13px;
+        font-weight: 800;
+        color: var(--color-gold);
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+      }
+      .value-item h4 {
+        font-size: 17px;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+      .value-item p {
+        font-size: 14px;
+        color: var(--color-ink-muted);
+        margin: 0;
+        line-height: 1.6;
+      }
+
+      /* Final CTA Section */
+      .cta-section {
+        padding-block: 68px;
+        text-align: center;
+        position: relative;
+      }
+      .cta-box {
+        background: linear-gradient(135deg, var(--color-card) 0%, var(--color-bg-secondary) 100%);
+        border: 1px solid var(--color-gold-dark);
+        border-radius: var(--radius-lg);
+        padding: 44px 28px;
+        max-width: 800px;
+        margin-inline: auto;
+        box-shadow: var(--shadow-soft);
+      }
+      .cta-box h2 {
+        font-size: clamp(24px, 3.8vw, 38px);
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        margin: 0 0 16px;
+      }
+      .cta-box p {
+        font-size: 16px;
+        color: var(--color-ink-muted);
+        margin: 0 auto 30px;
+        max-width: 560px;
+      }
+
+      /* Footer */
+      .site-footer {
+        padding-block: 30px 36px;
+        border-top: 1px solid var(--color-border-subtle);
+        font-size: 13px;
+        color: var(--color-ink-dim);
+      }
+      .footer-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        text-align: center;
+      }
+      @media (min-width: 640px) {
+        .footer-inner {
+          flex-direction: row;
+          text-align: right;
+        }
+      }
+      .footer-links {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .footer-links a:hover {
+        color: var(--color-gold);
+      }
+
+      /* Mobile Optimizations */
+      @media (max-width: 600px) {
+        .container {
+          padding-inline: 16px;
+        }
+        .header-inner {
+          padding-block: 12px;
+        }
+        .brand-sub {
+          display: none;
+        }
+        .header-cta {
+          padding: 6px 12px;
+          font-size: 12px;
+        }
+        .hero {
+          padding-block: 36px 30px;
+        }
+        .hero-glow {
+          display: none;
+        }
+        .hero h1 {
+          font-size: 22px;
+          line-height: 1.3;
+        }
+        .hero h1 br {
+          display: none;
+        }
+        .hero-lead {
+          font-size: 15px;
+          margin-bottom: 24px;
+        }
+        .services-grid {
+          grid-template-columns: 1fr;
+        }
+        .values-grid {
+          grid-template-columns: 1fr;
+        }
+        .cta-box {
+          padding: 28px 16px;
+        }
+        .btn-primary {
+          width: 100%;
+          padding: 14px 16px;
+          font-size: 15px;
+          white-space: normal;
+          text-align: center;
+          line-height: 1.3;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">דילוג לתוכן המרכזי</a>
+
+    <!-- Site Header -->
+    <header class="site-header" role="banner">
+      <div class="container header-inner">
+        <a href="https://drd.co.il/" class="brand-logo" aria-label="DRD עמוד הבית">
+          <span class="brand-mark" aria-hidden="true">DRD</span>
+          <div class="brand-info">
+            <span class="brand-text">DRD</span>
+            <span class="brand-sub">מומחיות לבנייה ותחזוקת Shopify</span>
+          </div>
+        </a>
+        <a href="https://drd.co.il/shopify/" class="header-cta">
+          <span>שאלון התאמה לחנות</span>
+          <svg class="btn-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12 19 5 12 12 5"></polyline>
+          </svg>
+        </a>
+      </div>
+    </header>
+
+    <main id="main-content" role="main">
+      <!-- Hero Section -->
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-glow" aria-hidden="true"></div>
+        <div class="container hero-content">
+          <div class="hero-badge">
+            <span class="hero-badge-dot" aria-hidden="true"></span>
+            <span>פתרונות מקצועיים לחנויות Shopify</span>
+          </div>
+
+          <h1 id="hero-title">
+            חנות ה-Shopify שלכם צריכה לעבוד מהר,<br />
+            <span class="highlight">להיראות מעולה ולמכור ללא תקלות.</span>
+          </h1>
+
+          <p class="hero-lead">
+            ב-DRD אנחנו מספקים מענה הנדסי ממוקד לחנויות Shopify בישראל: הקמת חנויות חדשות מותאמות אישית, שדרוג ביצועי מהירות ומובייל, ותחזוקה חודשית שוטפת שנותנת שקט נפשי.
+          </p>
+
+          <div>
+            <a href="https://drd.co.il/shopify/" class="btn-primary" id="main-lead-cta">
+              <span>מעבר לשאלון בדיקת התאמה ל-Shopify</span>
+              <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </a>
+          </div>
+
+          <p class="hero-note">שאלון קצר וממוקד · מענה אישי והצעה מתאימה תוך יום עסקים אחד</p>
+        </div>
+      </section>
+
+      <!-- Services Section -->
+      <section class="services-section" aria-labelledby="services-title">
+        <div class="container">
+          <div class="section-heading">
+            <div class="section-kicker">השירותים שלנו ל-Shopify</div>
+            <h2 id="services-title">פתרונות ממוקדים לחנויות אונליין</h2>
+            <p>שירות מקצועי, יסודי וישיר עבור מותגים וחנויות איקומרס.</p>
+          </div>
+
+          <div class="services-grid">
+            <!-- Service 1: Shopify Store Building -->
+            <article class="service-card" aria-labelledby="service-build-title">
+              <div class="service-icon-wrap" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </div>
+              <h3 id="service-build-title">בניית חנות Shopify חדשה</h3>
+              <p>הקמת חנות איקומרס מהירה ומעוצבת מאפס, עם מבנה ממיר, התאמה מלאה למובייל והגדרות סליקה ומשלוחים מותאמות לשוק הישראלי.</p>
+              <ul class="service-bullets" aria-label="מאפייני הקמת חנות">
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>עיצוב נקי ומותאם למותג ולמובייל</span>
+                </li>
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>הגדרת קטלוג, קולקציות ומערכת סינונים</span>
+                </li>
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>חיבור שירותי משלוחים, סליקה וקבלות</span>
+                </li>
+              </ul>
+            </article>
+
+            <!-- Service 2: Shopify Optimization & Fixes -->
+            <article class="service-card" aria-labelledby="service-opt-title">
+              <div class="service-icon-wrap" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+              </div>
+              <h3 id="service-opt-title">שדרוג ותיקון חנות קיימת</h3>
+              <p>שיפור מהירות הטעינה, פתרון תקלות צ'קאאוט ועגלה, תיקון שיבושי תצוגה במסכים ניידים והסרת אפליקציות מיותרות שמאטות את החנות.</p>
+              <ul class="service-bullets" aria-label="מאפייני שדרוג חנות">
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>האצת זמני טעינה וציוני ביצועים</span>
+                </li>
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>תיקון באגים בעמוד המוצר ובצ'קאאוט</span>
+                </li>
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>התאמות קוד נקיות בתבנית (Liquid/CSS)</span>
+                </li>
+              </ul>
+            </article>
+
+            <!-- Service 3: Monthly Maintenance -->
+            <article class="service-card" aria-labelledby="service-maint-title">
+              <div class="service-icon-wrap" aria-hidden="true">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+              </div>
+              <h3 id="service-maint-title">תחזוקת Shopify חודשית</h3>
+              <p>ליווי טכני שוטף וזמין לבעלי חנויות פעילות: עדכוני מוצרים ומבצעים, פתרון תקלות בזמן אמת, תחזוקת תבנית וניטור שוטף ללא הפתעות.</p>
+              <ul class="service-bullets" aria-label="מאפייני תחזוקה חודשית">
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>מענה שוטף לשינויים ותוספות בחנות</span>
+                </li>
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>ניטור רציף של תהליך הרכישה והסליקה</span>
+                </li>
+                <li>
+                  <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                  <span>שקט טכנולוגי לבעלי החנות</span>
+                </li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- How We Work Section -->
+      <section class="values-section" aria-labelledby="values-title">
+        <div class="container">
+          <div class="section-heading">
+            <div class="section-kicker">תהליך עבודה מובנה</div>
+            <h2 id="values-title">איך מתחילים לעבוד ביחד?</h2>
+            <p>תהליך מסודר ושקוף שמתאים לקצב של חנות איקומרס.</p>
+          </div>
+
+          <div class="values-grid">
+            <div class="value-item">
+              <div class="value-number">שלב 01</div>
+              <h4>מילוי שאלון התאמה</h4>
+              <p>עונים על שאלון קצר של 8 שאלות להגדרת צרכי החנות והיקף העבודה.</p>
+            </div>
+            <div class="value-item">
+              <div class="value-number">שלב 02</div>
+              <h4>אבחון ובדיקה טכנית</h4>
+              <p>אנחנו בוחנים את מצב החנות הנוכחי או מאפיינים את צרכי החנות החדשה.</p>
+            </div>
+            <div class="value-item">
+              <div class="value-number">שלב 03</div>
+              <h4>הצעת עבודה מוגדרת</h4>
+              <p>מקבלים תוכנית עבודה שקופה ומסודרת עם לוחות זמנים ועלויות ברורות מראש.</p>
+            </div>
+            <div class="value-item">
+              <div class="value-number">שלב 04</div>
+              <h4>ביצוע ובדיקות סופיות</h4>
+              <p>פיתוח, שדרוג ובדיקות מקיפות בכל המכשירים לפני השקה או מסירה.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Final CTA Section -->
+      <section class="cta-section" aria-labelledby="cta-title">
+        <div class="container">
+          <div class="cta-box">
+            <h2 id="cta-title">רוצים לקדם את חנות ה-Shopify שלכם?</h2>
+            <p>השאירו פרטים בשאלון ההתאמה הרשמי של DRD, ונחזור אליכם עם אבחון ראשוני והצעה מסודרת.</p>
+            <a href="https://drd.co.il/shopify/" class="btn-primary">
+              <span>מעבר לשאלון התאמה ל-Shopify</span>
+              <svg class="btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="19" y1="12" x2="5" y2="12"></line>
+                <polyline points="12 19 5 12 12 5"></polyline>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="site-footer" role="contentinfo">
+      <div class="container footer-inner">
+        <div>
+          <span>© DRD — פתרונות בנייה, שדרוג ותחזוקת Shopify. כל הזכויות שמורות.</span>
+        </div>
+        <nav class="footer-links" aria-label="קישורי תחתית">
+          <a href="https://drd.co.il/">אתר DRD הראשי</a>
+          <a href="https://drd.co.il/shopify/">שאלון התאמה ל-Shopify</a>
+          <a href="https://drd.co.il/unsubscribe/">הסרה מרשימת תפוצה</a>
+        </nav>
+      </div>
+    </footer>
+  </body>
+</html>
